@@ -10,8 +10,11 @@ CSCI 5117, Fall 2026, [assignment description](https://canvas.umn.edu/courses/57
 
 ### Students
 
-* First Last, x500@umn.edu
-* Ashwin Thomas thom8264
+* Thomas Kehler, kehle019@umn.edu
+* Max Lin, lin01438@umn.edu
+* Nimisha Bora, bora0083@umn.edu
+* Ashwin Thomas thom8264@umn.edu
+* Vishnu Kuriseti, kuris005@umn.edu
 
 
 ## Key Features
