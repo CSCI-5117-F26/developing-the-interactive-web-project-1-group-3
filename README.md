@@ -4,14 +4,17 @@ CSCI 5117, Fall 2026, [assignment description](https://canvas.umn.edu/courses/57
 
 ## App Info:
 
-* Team Name: TODO
+* Team Name: Wolves in 5
 * App Name: TODO
 * App Link: <https://TODO.com/>
 
 ### Students
 
-* First Last, x500@umn.edu
-* ...
+* Thomas Kehler, kehle019@umn.edu
+* Max Lin, lin01438@umn.edu
+* Nimisha Bora, bora0083@umn.edu
+* Ashwin Thomas thom8264@umn.edu
+* Vishnu Kuriseti, kuris005@umn.edu
 
 
 ## Key Features
