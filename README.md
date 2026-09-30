@@ -47,7 +47,9 @@ In this space please either provide images (around 4) showing your prototypes, O
 
 **[Add images/photos that show your paper prototype (around 4)](https://stackoverflow.com/questions/10189356/how-to-add-screenshot-to-readmes-in-github-repository) along with a very brief caption:**
 
-![](https://media.giphy.com/media/26ufnwz3wDUli7GU0/giphy.gif)
+<img width="465" height="335" alt="image" src="https://github.com/user-attachments/assets/a236c087-914f-4595-9421-9170dbcd93bb" />
+<p>The Home page of our 'SubleaseFinder' site. Contains navigation bar at the top, along with map and feed data. </p>
+
 
 
 ## External Dependencies
