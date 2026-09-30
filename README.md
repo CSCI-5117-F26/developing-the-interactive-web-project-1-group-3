@@ -50,6 +50,20 @@ In this space please either provide images (around 4) showing your prototypes, O
 <img width="465" height="335" alt="image" src="https://github.com/user-attachments/assets/a236c087-914f-4595-9421-9170dbcd93bb" />
 <p>The Home page of our 'SubleaseFinder' site. Contains navigation bar at the top, along with map and feed data. </p>
 
+<img width="515" height="371" alt="image" src="https://github.com/user-attachments/assets/8db0229a-3ad6-4ef6-af9a-5459ac2852ba" />
+<p> The inbox of messages for our site and will be the main form of communication between individuals. You can search for users and upload images.</p>
+
+<img width="431" height="311" alt="image" src="https://github.com/user-attachments/assets/d2fa5531-6748-4b59-addd-184b5db5e754" />
+<p>This is the main feed page for sublease seekers. They can search and filter for more personal options.</p>
+
+<img width="510" height="365" alt="image" src="https://github.com/user-attachments/assets/dd2ce65d-b80f-4dc1-a0d0-5b1547a9fbef" />
+<p>This is the screen for viewing your listing. Owners have the ability to edit posts, where other users can only favorite the post and message the subleaser</p>
+
+<img width="457" height="328" alt="image" src="https://github.com/user-attachments/assets/bc2a2c51-cd75-4d3f-95d5-918e4a758a5d" />
+<p>This is the login page for returning users, we also have the sign up page for new users. </p>
+
+
+
 
 
 ## External Dependencies
