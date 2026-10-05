@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SubleaseFinder</title>
+    <link rel="stylesheet" 
+      href="https://cdn.jsdelivr.net/npm/purecss@3.1.0/build/pure-min.css"
+      integrity="sha384-kj0X2NG2KHBie8Tq8fH1kxnyWM9XsXQpq7XdwbKmFKjwwaXGKBlB2Klu3VOltSFx"
+      crossorigin="anonymous">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+<body>
+
+<div class="pure-menu pure-menu-horizontal nav-bar">
+    <a href="/" class="pure-menu-heading">SubleaseFinder</a>
+
+    <ul class="pure-menu-list">
+        <li class="pure-menu-item"><a href="/" class="pure-menu-link">Home</a></li>
+        <li class="pure-menu-item"><a href="/create" class="pure-menu-link">Create Listing</a></li>
+        <li class="pure-menu-item"><a href="/favorites" class="pure-menu-link">Favorites</a></li>
+        <li class="pure-menu-item"><a href="/messages" class="pure-menu-link">Messages</a></li>
+        <li class="pure-menu-item"><a href="/profile" class="pure-menu-link">Profile</a></li>
+    </ul>
+</div>
+
+<div class="search-bar">
+    <form action="/search" method="GET" class="pure-form">
+        <input type="text" name="q" placeholder="search housing..." class="pure-input-rounded">
+        <button class="pure-button pure-button-primary">Search</button>
+    </form>
+</div>
+
+<div class="content">
+</div>
+
+</body>
+</html>

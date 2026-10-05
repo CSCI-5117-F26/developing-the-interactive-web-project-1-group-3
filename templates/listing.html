@@ -1,0 +1,19 @@
+{% extends "home.html" %}
+{% block content %}
+
+<h2>{{ item.title }}</h2>
+
+<div class="listing-container">
+    <div class="img-large"></div>
+
+    <div class="details">
+        <p><strong>Address:</strong> {{ item.address }}</p>
+        <p><strong>Price:</strong> ${{ item.price }} / month</p>
+        <p>{{ item.description }}</p>
+
+        <a class="pure-button pure-button-primary">Message Leaser</a>
+        <a class="pure-button">Save this Post</a>
+    </div>
+</div>
+
+{% endblock %}
