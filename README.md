@@ -13,7 +13,7 @@ CSCI 5117, Fall 2026, [assignment description](https://canvas.umn.edu/courses/57
 * Thomas Kehler, kehle019@umn.edu
 * Max Lin, lin01438@umn.edu
 * Nimisha Bora, bora0083@umn.edu
-* Ashwin Thomas thom8264@umn.edu
+* Ashwin Thomas thom8264@umn.edu, note:Accidently Used other account called stacklylabs while pushing my main one is athomas7000
 * Vishnu Kuriseti, kuris005@umn.edu
 
 
