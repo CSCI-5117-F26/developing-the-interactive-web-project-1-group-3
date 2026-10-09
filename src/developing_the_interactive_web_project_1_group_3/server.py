@@ -24,7 +24,7 @@ def chat():
 
 
 
-@app.route("/create_listing/")
+@app.route("/create_listing/", methods=["GET", "POST"])
 def create_listing():
     return render_template( "create_listing.html")
 
