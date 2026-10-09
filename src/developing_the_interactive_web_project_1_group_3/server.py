@@ -9,7 +9,11 @@ from authlib.integrations.flask_client import OAuth
 
 
 app = Flask(__name__)
+database.setup()
 
 @app.route("/")
 def hello_world():
+    name = "uploaders_name"
+    
+    database.add_example_name(name)
     return render_template("home.html")

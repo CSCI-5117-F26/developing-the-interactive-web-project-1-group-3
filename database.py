@@ -1,10 +1,13 @@
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
+import dotenv
+from dotenv import load_dotenv
 import os
 import atexit
 
-pool = None
+load_dotenv()
 
+pool = None
 
 def setup():
     global pool
@@ -14,5 +17,16 @@ def setup():
     )
     # I'm not _actually_ convinced this is required, but the docs said to do it!
     atexit.register(pool.close)
+
+def add_example_name(name):
+    with pool.connection() as conn, conn.cursor() as curr:
+        # A smarter Daniel would be validating the inputs here.
+        # psycopg doesn't like "mixed" type lists so we cast the sound to 20 floats
+        curr.execute(
+            "insert into example_table (name) values (%s) returning id;",
+            (name,)
+        )
+        return curr.fetchone()
+
 
 # Implement DB functions
