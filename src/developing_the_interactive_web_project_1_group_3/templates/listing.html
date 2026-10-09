@@ -1,7 +1,14 @@
-{% extends "home.html" %}
+{% extends "layout.html" %}
 {% block content %}
 
 <h2>{{ item.title }}</h2>
+
+<div class="search-bar">
+    <form action="/search" method="GET" class="pure-form">
+        <input type="text" name="q" placeholder="search housing..." class="pure-input-rounded">
+        <button class="pure-button pure-button-primary">Search</button>
+    </form>
+</div>
 
 <div class="listing-container">
     <div class="img-large"></div>
