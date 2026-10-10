@@ -10,30 +10,24 @@
                 placeholder="Title" />
 
             <label for="address">Address</label>
-
-            <input name="monthly_rent" min="0" step="0.01"name ="address" type="text" id="address" placeholder="Enter address" class="pure-input-1" required>
+            <input name="address" min="0" step="0.01" name ="address" type="text" id="address" placeholder="Enter address" class="pure-input-1" required>
             
-            <label for="monthly-rent" >Monthly rent</label>
+            <label for="monthly_rent" >Monthly rent</label>
             <input name="monthly_rent" min="0" step="0.01"type="number" id="monthly-rent" placeholder="Enter Monthly rent" class="pure-input-1" required>
 
-            <label for=" lease-start-date">Lease start date</label>
+            <label for=" lease_start_date">Lease start date</label>
+            <input type="date" id="lease_start_date" name="lease_start_date" required>
 
-            <input type="date" id="lease-start-date" name="lease_start_date" required>
-
-            <label for="lease-end-date">Lease end date</label>
-            <input type="date" id="lease-end-date" name="lease_end_date" required>
+            <label for="lease_end_date">Lease end date</label>
+            <input type="date" id="lease_end_date" name="lease_end_date" required>
 
             <label for="description">Description</label>
             <textarea id="description" name="description" rows="5" required></textarea>
 
-
-        
         </div>
     <button type="submit" class="pure-button pure-button-primary">
         Create Listing
     </button>
-
-
     </fieldset>
 </form>
 
