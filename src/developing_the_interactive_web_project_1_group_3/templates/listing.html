@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2>{{ item.title }}</h2>
+
+<div class="search-bar">
+    <form action="/search" method="GET" class="pure-form">
+        <input type="text" name="q" placeholder="search housing..." class="pure-input-rounded">
+        <button class="pure-button pure-button-primary">Search</button>
+    </form>
+</div>
+
+
+
+
+<div class="listing-container">
+    <div>class="pure-u-1 pure-u-md-1-2"</div>
+
+        <div class="img-large"></div>
+    </div>
+
+    <div class="details pure-u-1 pure-u-md-1-2">
+        <p><strong>Address:</strong> {{ item.address }}</p>
+        <p><strong>Price:</strong> ${{ item.price }} / month</p>
+        <p>{{ item.description }}</p>
+
+        <a class="pure-button pure-button-primary">Message Leaser</a>
+        <a class="pure-button">Save this Post</a>
+    </div>
+</div>
+
+{% endblock %}
