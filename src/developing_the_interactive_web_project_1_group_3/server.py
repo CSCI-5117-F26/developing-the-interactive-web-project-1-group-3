@@ -13,6 +13,8 @@ database.setup()
 
 @app.route("/")
 def render_home():
+    #istings = database.get_all_listings()
+    #print(listings)
     return render_template("home.html")
 
 @app.route("/chat")

@@ -1,6 +1,7 @@
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
 import dotenv
+import logging
 from dotenv import load_dotenv
 import os
 import atexit
@@ -8,6 +9,11 @@ import atexit
 load_dotenv()
 
 pool = None
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s"
+)
+logging.getLogger("psycopg.pool").setLevel(logging.INFO)
 
 def setup():
     global pool
@@ -28,5 +34,11 @@ def add_listing(title, address, rent, leaseStart, leaseEnd, description):
         )
         return curr.fetchone()
 
-
-# Implement DB functions
+def get_all_listings():
+    with pool.connection() as conn, conn.cursor() as curr:
+        # A smarter Daniel would be validating the inputs here.
+        # psycopg doesn't like "mixed" type lists so we cast the sound to 20 floats
+        curr.execute(
+            "select * from listing;",
+        )
+        return curr.fetchone()
