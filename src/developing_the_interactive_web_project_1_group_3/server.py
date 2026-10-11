@@ -10,7 +10,9 @@ database.setup()
 
 @app.route("/")
 def render_home():
-    return render_template("home.html")
+    listings = database.get_all_listings()
+
+    return render_template("home.html", listings=listings)
 
 @app.route("/chat")
 def chat():
@@ -29,7 +31,8 @@ def create_listing():
         description = request.form.get("description")
 
         database.add_listing(title, address, rent, leaseStart, leaseEnd, description)
-        return render_template("home.html")
+        listings = database.get_all_listings()
+        return render_template("home.html", listings=listings)
 
 @app.route("/edit_listing/")
 def edit_listing():

@@ -23,105 +23,25 @@
                
     </div>
 
-    
     <div class="pure-u-1 pure-u-md-1-2">
         <h2>Your Listings</h2>
         <div class="pure-g">
+
+            {% for listing in listings %}
             <div class="pure-u-1-2">
                 <div class="listing-card">
                     <div class="img-placeholder"></div>
-                    <h2>Dinkytown Apartment 1 </h2>
-                    <p>$850 per month</p>
+                    <h2>{{ listing.title }}</h2>
+                    <p>{{ listing.rent }}</p>
             
                     <a href="/listing" class="pure-button">View Listing</a>
-            
                 </div>
             </div>
-            
-            <div class="pure-u-1-2">
-                <div class="listing-card">
-                    <div class="img-placeholder"></div>
-                    <h2>Dinkytown Apartment 2 </h2>
-                    <p>$850 per month</p>
-                    <a href="/listing" class="pure-button">View Listing</a>
-            
-                </div>
-            </div>
-            
-            
-            <div class="pure-u-1-2">
-                <div class="listing-card">
-                    <div class="img-placeholder"></div>
-                    <h2>Dinkytown Apartment 3 </h2>
-                    <p>$850 per month</p>
-            
-                    <a href="/listing" class="pure-button">View Listing</a>
-            
-                </div>
-            </div>
-            
-            
-            <div class="pure-u-1-2">
-                <div class="listing-card">
-                    <div class="img-placeholder"></div>
-                    <h2>Dinkytown Apartment 4 </h2>
-                    <p>$850 per month</p>
-                    <a href="/listing" class="pure-button">View Listing</a>
-            
-                </div>
-            </div>
-            
-            <div class="pure-u-1-2">
-                <div class="listing-card">
-                    <div class="img-placeholder"></div>
-                    <h2>Dinkytown Apartment 5 </h2>
-                    <p>$850 per month</p>
-                    <a href="/listing" class="pure-button">View Listing</a>
-            
-                </div>
-            </div>
-            
-            <div class="pure-u-1-2">
-                <div class="listing-card">
-                    <div class="img-placeholder"></div>
-                    <h2>Dinkytown Apartment 6 </h2>
-                    <p>$850 per month</p>
-                    <a href="/listing" class="pure-button">View Listing</a>
-            
-                </div>
-            </div>
-
-
-
-
-
-
+            {% endfor %}
 
         </div>
-        
-
-        
-    
     </div>
-
-
-
-
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 {% endblock %}
 

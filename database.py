@@ -35,4 +35,4 @@ def get_all_listings():
         curr.execute(
             "select * from listing;",
         )
-        return curr.fetchone()
+        return curr.fetchall()
