@@ -1,7 +1,6 @@
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
 import dotenv
-import logging
 from dotenv import load_dotenv
 import os
 import atexit
@@ -9,11 +8,6 @@ import atexit
 load_dotenv()
 
 pool = None
-
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s"
-)
-logging.getLogger("psycopg.pool").setLevel(logging.INFO)
 
 def setup():
     global pool
@@ -30,7 +24,7 @@ def add_listing(title, address, rent, leaseStart, leaseEnd, description):
         # psycopg doesn't like "mixed" type lists so we cast the sound to 20 floats
         curr.execute(
             "insert into listing (title, address, rent, leaseStart, leaseEnd, description) values (%s, %s, %s, %s, %s, %s) returning id;",
-            (title, address, rent, leaseStart, leaseEnd, description)
+            (title, address, rent, leaseStart, leaseEnd, description),
         )
         return curr.fetchone()
 
