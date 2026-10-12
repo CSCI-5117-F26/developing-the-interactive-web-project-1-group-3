@@ -28,6 +28,15 @@ def add_listing(title, address, rent, leaseStart, leaseEnd, description):
         )
         return curr.fetchone()
 
+def get_first_six():
+    with pool.connection() as conn, conn.cursor() as curr:
+        # A smarter Daniel would be validating the inputs here.
+        # psycopg doesn't like "mixed" type lists so we cast the sound to 20 floats
+        curr.execute(
+            "select * from listing limit 6;",
+        )
+        return curr.fetchall()
+
 def get_all_listings():
     with pool.connection() as conn, conn.cursor() as curr:
         # A smarter Daniel would be validating the inputs here.

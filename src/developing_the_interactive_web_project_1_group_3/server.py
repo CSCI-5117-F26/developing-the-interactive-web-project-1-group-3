@@ -10,7 +10,7 @@ database.setup()
 
 @app.route("/")
 def render_home():
-    listings = database.get_all_listings()
+    listings = database.get_first_six()
 
     return render_template("home.html", listings=listings)
 
@@ -31,7 +31,7 @@ def create_listing():
         description = request.form.get("description")
 
         database.add_listing(title, address, rent, leaseStart, leaseEnd, description)
-        listings = database.get_all_listings()
+        listings = database.get_first_six()
         return render_template("home.html", listings=listings)
 
 @app.route("/edit_listing/")
@@ -44,7 +44,8 @@ def favorites():
 
 @app.route("/feed/")
 def feed():
-    return render_template( "feed.html")
+    listings = database.get_all_listings()
+    return render_template("feed.html", listings=listings)
 
 @app.route("/listing/")
 def listing():
