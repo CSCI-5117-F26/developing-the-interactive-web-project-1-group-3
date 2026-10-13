@@ -33,7 +33,7 @@ def get_first_six():
         # A smarter Daniel would be validating the inputs here.
         # psycopg doesn't like "mixed" type lists so we cast the sound to 20 floats
         curr.execute(
-            "select * from listing order by idlimit 6;",
+            "select * from listing order by id limit 6;",
         )
         return curr.fetchall()
 
