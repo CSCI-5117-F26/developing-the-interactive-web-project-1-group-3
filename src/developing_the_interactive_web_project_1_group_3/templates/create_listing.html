@@ -28,8 +28,10 @@
             <textarea id="description" name="description" rows="5" required></textarea>
         </div>
     <button type="submit" class="pure-button pure-button-primary">
+        
         Create Listing
     </button>
+    <button type="button" class="pure-button" onclick="history.back()">Cancel</button>
     </fieldset>
 </form>
 
@@ -64,6 +66,20 @@
             console.log("Address edited");
         });
     }
+
+    const start = document.getElementById("lease_start_date");
+    const end = document.getElementById("lease_end_date");
+    function validateDates() {
+        end.min = start.value;
+        end.setCustomValidity(
+            start.value && end.value < start.value
+                ? "End date cannot be earlier than start date."
+                : ""
+        );
+    }
+    start.addEventListener("change", validateDates);
+    end.addEventListener("change", validateDates);
+    validateDates();
 </script>
 <script async src="{{ google_maps_url }}"></script>
 {% endblock %}

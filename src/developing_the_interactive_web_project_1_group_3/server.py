@@ -6,6 +6,7 @@ import os
 import dotenv
 from dotenv import load_dotenv
 import random
+from datetime import date
 #from authlib.integrations.flask_client import OAuth
 
 load_dotenv()
@@ -53,6 +54,9 @@ def create_listing():
         leaseEnd = request.form.get("lease_end_date")
         description = request.form.get("description")
 
+        if date.fromisoformat(leaseEnd) < date.fromisoformat(leaseStart):
+            abort(400, "End date cannot be earlier than start date.")
+
         database.add_listing(title, address, rent, leaseStart, leaseEnd, description)
         listings = database.get_first_six()
         return render_template("home.html", listings=listings)
@@ -64,6 +68,11 @@ def edit_listing(listing_id):
         abort(404)
 
     if request.method == "POST":
+        leaseStart = request.form.get("lease_start_date")
+        leaseEnd = request.form.get("lease_end_date")
+        if date.fromisoformat(leaseEnd) < date.fromisoformat(leaseStart):
+            abort(400, "End date cannot be earlier than start date.")
+
         database.update_listing(
             listing_id,
             request.form.get("title"),

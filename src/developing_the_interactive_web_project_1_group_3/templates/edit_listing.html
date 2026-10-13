@@ -28,4 +28,20 @@
 	</fieldset>
 </form>
 
+<script>
+	const start = document.getElementById("lease_start_date");
+	const end = document.getElementById("lease_end_date");
+	function validateDates() {
+		end.min = start.value;
+		end.setCustomValidity(
+			start.value && end.value < start.value
+				? "End date cannot be earlier than start date."
+				: ""
+		);
+	}
+	start.addEventListener("change", validateDates);
+	end.addEventListener("change", validateDates);
+	validateDates();
+</script>
+
 {% endblock %}
