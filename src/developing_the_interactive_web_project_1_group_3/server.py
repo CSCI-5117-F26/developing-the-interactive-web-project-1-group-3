@@ -93,6 +93,7 @@ def listing(listing_id):
         abort(404)
     return render_template("listing.html", item=item)
 
+
 @app.route("/listing/<int:listing_id>/delete/", methods=["POST"])
 def delete_listing(listing_id):
     deleted_listing = database.delete_listing(listing_id)
@@ -116,6 +117,7 @@ def delete_listing(listing_id):
 ##    return oauth.auth0.authorize_redirect(
 #        redirect_uri=url_for("callback", _external=True)
 #    )
+
 
 @app.route("/messages/")
 def messages():
