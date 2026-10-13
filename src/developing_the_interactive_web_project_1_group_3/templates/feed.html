@@ -21,7 +21,7 @@
         
                 <a href="{{ url_for('listing', listing_id=listing.id) }}" class="pure-button">View Listing</a>
                 <form method="post" action="{{ url_for('delete_listing', listing_id=listing.id) }}" onsubmit="return confirm('Delete this post? This cannot be undone.')">
-                    <button type="submit" class="pure-button">Delete Post</button>
+                    <button type="submit" class="pure-button button-danger">Delete Post</button>
                 </form>
             </div>
         </div>
