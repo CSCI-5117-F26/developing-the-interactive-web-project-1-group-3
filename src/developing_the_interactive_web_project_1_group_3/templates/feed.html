@@ -19,7 +19,7 @@
                 <h2>{{ listing.title }}</h2>
                 <p>{{ listing.rent }}</p>
         
-                <a href="/listing" class="pure-button">View Listing</a>
+                <a href="{{ url_for('listing', listing_id=listing.id) }}" class="pure-button">View Listing</a>
             </div>
         </div>
         {% endfor %}

@@ -45,3 +45,11 @@ def get_all_listings():
             "select * from listing;",
         )
         return curr.fetchall()
+
+def get_listing(listing_id):
+    with pool.connection() as conn, conn.cursor() as curr:
+        curr.execute(
+            "select * from listing where id = %s;",
+            (listing_id,),
+        )
+        return curr.fetchone()

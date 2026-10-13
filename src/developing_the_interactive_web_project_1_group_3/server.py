@@ -1,5 +1,5 @@
 from functools import wraps 
-from flask import Flask, render_template, request, session, redirect, url_for
+from flask import Flask, abort, render_template, request, session, redirect, url_for
 import database
 import math
 import os
@@ -70,9 +70,12 @@ def feed():
     listings = database.get_all_listings()
     return render_template("feed.html", listings=listings)
 
-@app.route("/listing/")
-def listing():
-    return render_template( "listing.html")
+@app.route("/listing/<int:listing_id>/")
+def listing(listing_id):
+    item = database.get_listing(listing_id)
+    if item is None:
+        abort(404)
+    return render_template("listing.html", item=item)
 
 
 #@app.route("/callback", methods=["GET", "POST"])
