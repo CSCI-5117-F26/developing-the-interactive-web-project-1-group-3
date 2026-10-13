@@ -1,5 +1,30 @@
 {% extends "layout.html" %}
 {% block content %}
-<h1>Test</h1>
+
+<h1>Edit Listing</h1>
+
+<form method="post" action="{{ url_for('edit_listing', listing_id=item.id) }}" class="pure-form pure-form-stacked">
+	<fieldset>
+		<label for="title">Title</label>
+		<input required minlength="3" type="text" id="title" name="title" value="{{ item.title }}">
+
+		<label for="address">Address</label>
+		<input required type="text" id="address" name="address" value="{{ item.address }}">
+
+		<label for="monthly_rent">Monthly rent</label>
+		<input required min="0" step="1" type="number" id="monthly_rent" name="monthly_rent" value="{{ item.rent }}">
+
+		<label for="lease_start_date">Lease start date</label>
+		<input required type="date" id="lease_start_date" name="lease_start_date" value="{{ item.leasestart }}">
+
+		<label for="lease_end_date">Lease end date</label>
+		<input required type="date" id="lease_end_date" name="lease_end_date" value="{{ item.leaseend }}">
+
+		<label for="description">Description</label>
+		<textarea required id="description" name="description" rows="5">{{ item.description }}</textarea>
+
+		<button type="submit" class="pure-button pure-button-primary">Save Changes</button>
+	</fieldset>
+</form>
 
 {% endblock %}

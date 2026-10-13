@@ -53,3 +53,10 @@ def get_listing(listing_id):
             (listing_id,),
         )
         return curr.fetchone()
+
+def update_listing(listing_id, title, address, rent, leaseStart, leaseEnd, description):
+    with pool.connection() as conn, conn.cursor() as curr:
+        curr.execute(
+            "update listing set title = %s, address = %s, rent = %s, leaseStart = %s, leaseEnd = %s, description = %s where id = %s;",
+            (title, address, rent, leaseStart, leaseEnd, description, listing_id),
+        )

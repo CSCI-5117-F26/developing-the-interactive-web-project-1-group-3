@@ -57,9 +57,25 @@ def create_listing():
         listings = database.get_first_six()
         return render_template("home.html", listings=listings)
 
-@app.route("/edit_listing/")
-def edit_listing():
-    return render_template( "edit_listing.html")
+@app.route("/edit_listing/<int:listing_id>/", methods=["GET", "POST"])
+def edit_listing(listing_id):
+    item = database.get_listing(listing_id)
+    if item is None:
+        abort(404)
+
+    if request.method == "POST":
+        database.update_listing(
+            listing_id,
+            request.form.get("title"),
+            request.form.get("address"),
+            request.form.get("monthly_rent"),
+            request.form.get("lease_start_date"),
+            request.form.get("lease_end_date"),
+            request.form.get("description"),
+        )
+        return redirect(url_for("listing", listing_id=listing_id))
+
+    return render_template("edit_listing.html", item=item)
 
 @app.route("/favorites/")
 def favorites():
