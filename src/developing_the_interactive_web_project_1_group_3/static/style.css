@@ -354,3 +354,8 @@ a {
         flex-wrap: wrap;
     }
 }
+gmp-place-autocomplete {
+    color-scheme: light;
+    width: 550px;
+    max-width: 100%;
+}

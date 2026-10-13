@@ -44,7 +44,7 @@ def chat():
 @app.route("/create_listing/", methods=["GET", "POST"])
 def create_listing():
     if request.method == 'GET':
-        return render_template( "create_listing.html")
+        return render_template( "create_listing.html", google_maps_url=os.environ['GOOGLE_MAPS_URL'])
     else:
         title = request.form.get("title")
         address = request.form.get("address")
