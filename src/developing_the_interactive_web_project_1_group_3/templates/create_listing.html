@@ -9,8 +9,11 @@
             <input required minlength="3" type="text" id="title" name='title'
                 placeholder="Title" />
 
-            <label for="address">Address</label>
-            <input name="address" min="0" step="0.01" name ="address" type="text" id="address" placeholder="Enter address" class="pure-input-1" required>
+            <label for="location">Address</label>
+            <gmp-place-autocomplete id="location"></gmp-place-autocomplete>
+            <input type="hidden" name="address" id="address">
+            <input type="hidden" name="latitude" id="latitude">
+            <input type="hidden" name="longitude" id="longitude">
             
             <label for="monthly_rent" >Monthly rent</label>
             <input name="monthly_rent" min="0" step="0.01"type="number" id="monthly-rent" placeholder="Enter Monthly rent" class="pure-input-1" required>
@@ -23,7 +26,6 @@
 
             <label for="description">Description</label>
             <textarea id="description" name="description" rows="5" required></textarea>
-
         </div>
     <button type="submit" class="pure-button pure-button-primary">
         Create Listing
@@ -31,5 +33,37 @@
     </fieldset>
 </form>
 
+<script>
+    async function initAutocomplete() {
+        await google.maps.importLibrary("places");
+        const placeAutocomplete = document.getElementById('location');
+        placeAutocomplete.addEventListener(
+        'gmp-select',
+        async ({ placePrediction }) => {
+            const place = placePrediction.toPlace();
+            await place.fetchFields({
+                fields: ['formattedAddress','location'],
+        });
+            document.getElementById('address').value = place.formattedAddress;
+        // document.getElementById('latitude').value = place.location.lat();
+            //document.getElementById('longitude').value = place.location.lng();
+        });
 
+        //Ensure an address selected
+        document.querySelector("form").addEventListener("submit", (event) => {
+            if (!document.getElementById("address").value) {
+                event.preventDefault();
+                alert("Select one of the suggested addresses.");
+            }
+        });
+        //Reset address fields when the user types ina new location 
+        placeAutocomplete.addEventListener("input", () => {
+            document.getElementById("address").value = "";
+            //document.getElementById("latitude").value = "";
+            //document.getElementById("longitude").value = "";
+            console.log("Address edited");
+        });
+    }
+</script>
+<script async src="{{ google_maps_url }}"></script>
 {% endblock %}
