@@ -6,7 +6,7 @@ import os
 import dotenv
 from dotenv import load_dotenv
 import random
-#from authlib.integrations.flask_client import OAuth
+from authlib.integrations.flask_client import OAuth
 
 load_dotenv()
 
@@ -15,21 +15,21 @@ database.setup()
 
 app.secret_key = os.environ["FLASK_SECRET"]
 
-#oauth = OAuth(app)
+oauth = OAuth(app)
 
-#domain = os.environ["AUTHO_0_DOMAIN"]
-#client_id = os.environ["AUTH_0_CLIENT_ID"]
-#client_secret = os.environ["AUTHO_0_CLIENT_SECRET"]
+domain = os.environ["AUTHO_0_DOMAIN"]
+client_id = os.environ["AUTH_0_CLIENT_ID"]
+client_secret = os.environ["AUTHO_0_CLIENT_SECRET"]
 
-#oauth.register(
-#    "auth0",
-#    client_id=client_id,
-#    client_secret=client_secret,
-#    client_kwargs={
-#       "scope": "openid profile email",
-#    },
-#    server_metadata_url=f"https://{domain}/.well-known/openid-configuration",
-#)
+oauth.register(
+    "auth0",
+    client_id=client_id,
+    client_secret=client_secret,
+    client_kwargs={
+       "scope": "openid profile email",
+    },
+    server_metadata_url=f"https://{domain}/.well-known/openid-configuration",
+)
 
 @app.route("/")
 def render_home():
@@ -102,21 +102,21 @@ def delete_listing(listing_id):
     return redirect(url_for("feed"))
 
 
-#@app.route("/callback", methods=["GET", "POST"])
-#def callback():
-#    """
-#    Callback redirect from Auth0
-#   """
-#   token = oauth.auth0.authorize_access_token()
-#   session["user"] = token
-#   return redirect("/")
+@app.route("/callback", methods=["GET", "POST"])
+def callback():
+    """
+    Callback redirect from Auth0
+   """
+    token = oauth.auth0.authorize_access_token()
+    session["user"] = token
+    return redirect("/")
 
 
-#@app.route("/login")
-#def login():
-##    return oauth.auth0.authorize_redirect(
-#        redirect_uri=url_for("callback", _external=True)
-#    )
+@app.route("/login")
+def login():
+    return oauth.auth0.authorize_redirect(
+        redirect_uri=url_for("callback", _external=True)
+    )
 
 
 @app.route("/messages/")
