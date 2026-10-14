@@ -17,7 +17,8 @@
             <div class="listing-card">
                 <div class="img-placeholder"></div>
                 <h2>{{ listing.title }}</h2>
-                <p>{{ listing.rent }}</p>
+                <p><strong>Address:</strong> {{ listing.address }}</p>
+                <p>${{ listing.rent }}/month</p>
         
                 <a href="{{ url_for('listing', listing_id=listing.id) }}" class="pure-button">View Listing</a>
                 <a href="{{ url_for('edit_listing', listing_id=listing.id) }}" class="pure-button">Edit Post</a>
