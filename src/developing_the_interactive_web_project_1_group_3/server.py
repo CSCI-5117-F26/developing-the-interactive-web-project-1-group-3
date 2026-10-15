@@ -6,7 +6,7 @@ import os
 import dotenv
 from dotenv import load_dotenv
 import random
-from authlib.integrations.flask_client import OAuth
+#from authlib.integrations.flask_client import OAuth
 
 load_dotenv()
 
@@ -21,7 +21,7 @@ app.secret_key = os.environ["FLASK_SECRET"]
 
 print("2")
 
-oauth = OAuth(app)
+#oauth = OAuth(app)
 
 print("3")
 
@@ -31,17 +31,17 @@ client_secret = os.environ["AUTHO_0_CLIENT_SECRET"]
 
 print("4")
 
-oauth.register(
-    "auth0",
-    client_id=client_id,
-    client_secret=client_secret,
-    client_kwargs={
-       "scope": "openid profile email",
-    },
-    server_metadata_url=f"https://{domain}/.well-known/openid-configuration",
-)
+#oauth.register(
+#    "auth0",
+#    client_id=client_id,
+#    client_secret=client_secret,
+#    client_kwargs={
+#       "scope": "openid profile email",
+#    },
+#    server_metadata_url=f"https://{domain}/.well-known/openid-configuration",
+#)
 
-print("ClientID: " + str(client_id) + "Client Secret: " + str(client_secret) + "Domain: " + str(domain))
+#print("ClientID: " + str(client_id) + "Client Secret: " + str(client_secret) + "Domain: " + str(domain))
 
 @app.route("/")
 def render_home():
