@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="listing-heading">
+    <h1>{{ item.title }}</h1>
+    <div class="listing-actions">
+        <a class="pure-button" href="{{ url_for('edit_listing', listing_id=item.id) }}">Edit Post</a>
+        <form method="post" action="{{ url_for('delete_listing', listing_id=item.id) }}" onsubmit="return confirm('Are you sure you want to delete this post?')">
+            <button type="submit" class="pure-button button-danger">Delete Post</button>
+        </form>
+    </div>
+</div>
+
+<div class="search-bar">
+    <form action="/search" method="GET" class="pure-form">
+        <input type="text" name="q" placeholder="search housing..." class="pure-input-rounded">
+        <button class="pure-button pure-button-primary">Search</button>
+    </form>
+</div>
+
+
+
+
+<div class="listing-container pure-g">
+    <div class="pure-u-1 pure-u-md-1-2">
+        {% if images %}
+        <div class="listing-image-gallery">
+            {% for image in images %}
+            <img
+                src="{{ image.image_url }}"
+                alt="{{ image.alt_text or item.title }}"
+                loading="lazy"
+            >
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="img-large"></div>
+        {% endif %}
+    </div>
+
+    <div class="details pure-u-1 pure-u-md-1-2">
+        <p><strong>Address:</strong> {{ item.address }}</p>
+        <p><strong>Price:</strong> ${{ item.rent }} / month</p>
+        <p>{{ item.description }}</p>
+
+        <a class="pure-button pure-button-primary">Message Leaser</a>
+        <a class="pure-button">Save this Post</a>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<h2>Login to Your Account</h2>
+
+<form class="pure-form pure-form-stacked" action="/login">
+    <button class="pure-button pure-button-primary">Login with Auth0</button>
+</form>
+
+<p>New User? <a href="/signup">Create an Account</a></p>
+
+{% endblock %}
