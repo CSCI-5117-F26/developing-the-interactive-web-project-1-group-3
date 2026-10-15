@@ -102,21 +102,21 @@ def delete_listing(listing_id):
     return redirect(url_for("feed"))
 
 
-@app.route("/callback", methods=["GET", "POST"])
-def callback():
-    """
-    Callback redirect from Auth0
-   """
-    token = oauth.auth0.authorize_access_token()
-    session["user"] = token
-    return redirect("/")
+#@app.route("/callback", methods=["GET", "POST"])
+#def callback():
+#    """
+#    Callback redirect from Auth0
+#   """
+#    token = oauth.auth0.authorize_access_token()
+#    session["user"] = token
+#    return redirect("/")
 
 
-@app.route("/login")
-def login():
-    return oauth.auth0.authorize_redirect(
-        redirect_uri=url_for("callback", _external=True)
-    )
+#@app.route("/login")
+#def login():
+#    return oauth.auth0.authorize_redirect(
+#        redirect_uri=url_for("callback", _external=True)
+#    )
 
 
 @app.route("/messages/")
