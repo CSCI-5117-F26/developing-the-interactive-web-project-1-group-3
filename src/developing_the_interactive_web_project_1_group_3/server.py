@@ -10,16 +10,26 @@ from authlib.integrations.flask_client import OAuth
 
 load_dotenv()
 
+print("0")
+
 app = Flask(__name__)
 database.setup()
 
+print("1")
+
 app.secret_key = os.environ["FLASK_SECRET"]
 
+print("2")
+
 oauth = OAuth(app)
+
+print("3")
 
 domain = os.environ["AUTHO_0_DOMAIN"]
 client_id = os.environ["AUTH_0_CLIENT_ID"]
 client_secret = os.environ["AUTHO_0_CLIENT_SECRET"]
+
+print("4")
 
 oauth.register(
     "auth0",
@@ -30,6 +40,8 @@ oauth.register(
     },
     server_metadata_url=f"https://{domain}/.well-known/openid-configuration",
 )
+
+print("ClientID: " + str(client_id) + "Client Secret: " + str(client_secret) + "Domain: " + str(domain))
 
 @app.route("/")
 def render_home():
