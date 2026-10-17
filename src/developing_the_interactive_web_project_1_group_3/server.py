@@ -7,7 +7,7 @@ import cloudinary
 import cloudinary.uploader
 import dotenv
 from dotenv import load_dotenv
-from flask import Flask, abort, redirect, render_template, request, session, url_for
+from flask import Flask, abort, flash, redirect, render_template, request, session, url_for
 import database
 from authlib.integrations.flask_client import OAuth
 
@@ -232,7 +232,8 @@ def edit_listing(listing_id):
 
 @app.route("/favorites/")
 def favorites():
-    return render_template("favorites.html")
+    listings = database.get_favorites()
+    return render_template("favorites.html", listings=listings)
 
 
 @app.route("/feed/")
@@ -247,7 +248,27 @@ def listing(listing_id):
     if item is None:
         abort(404)
     images = database.get_listing_images(listing_id)
-    return render_template("listing.html", item=item, images=images)
+    saved = database.is_favorite(listing_id)
+    return render_template("listing.html", item=item, images=images, saved=saved)
+
+@app.route("/listing/<int:listing_id>/favorite/", methods=["POST"])
+def favorite_listing(listing_id):
+    item = database.get_listing(listing_id)
+    if item is None:
+        abort(404)
+    database.add_favorite(listing_id)
+    flash("Saved to Favorites")
+    return redirect(url_for("listing", listing_id=listing_id))
+
+
+@app.route("/listing/<int:listing_id>/unfavorite/", methods=["POST"])
+def unfavorite_listing(listing_id):
+    item = database.get_listing(listing_id)
+    if item is None:
+        abort(404)
+    database.remove_favorite(listing_id)
+    flash("Removed from Favorites")
+    return redirect(url_for("listing", listing_id=listing_id))
 
 
 @app.route("/listing/<int:listing_id>/delete/", methods=["POST"])

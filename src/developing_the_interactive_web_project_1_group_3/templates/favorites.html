@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block content %}
 
-<div class="pure-g">
+<!-- <div class="pure-g">
     
 
     <div class="pure-u-1-2">
@@ -12,37 +12,21 @@
             <a href="/listing" class="pure-button">View Listing</a>
 
         </div>
-    </div>
+    </div> -->
 
-
-    
-
-
+<div class="pure-g">
+    {% for listing in listings %}
     <div class="pure-u-1-2">
-        <div class="listing-card">
+        <div class="listing-card favorite-card">
+            <span class="favorite-heart" aria-hidden="true">❤️</span>
             <div class="img-placeholder"></div>
-            <h2>Dinkytown Apartment 4 </h2>
-            <p>$850 per month</p>
-            <a href="/listing" class="pure-button">View Listing</a>
-
+            <h2>{{ listing.title }}</h2>
+            <p><strong>Address:</strong> {{ listing.address }}</p>
+            <p>${{ listing.rent }}/month</p>
+            <a href="{{ url_for('listing', listing_id=listing.id) }}" class="pure-button">View Listing</a>
         </div>
     </div>
-
-    
-
-    <div class="pure-u-1-2">
-        <div class="listing-card">
-            <div class="img-placeholder"></div>
-            <h2>Dinkytown Apartment 6 </h2>
-            <p>$850 per month</p>
-            <a href="/listing" class="pure-button">View Listing</a>
-
-        </div>
-    </div>
-
-
-
-
+    {% endfor %}
 </div>
 
 {% endblock %}

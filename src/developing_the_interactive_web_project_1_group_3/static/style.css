@@ -189,6 +189,26 @@ a {
     transform: translateY(-2px);
 }
 
+.favorite-card {
+    position: relative;
+}
+
+.favorite-heart {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(27, 57, 45, 0.16);
+    font-size: 16px;
+    line-height: 1;
+}
+
 .listing-card h2 {
     margin: 8px 0;
 }
@@ -218,6 +238,14 @@ a {
     justify-content: space-between;
     gap: 20px;
     margin: 0 0 18px;
+}
+
+.listing-title {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    min-width: 0;
 }
 
 .listing-heading h1 {
@@ -427,4 +455,48 @@ gmp-place-autocomplete {
     color-scheme: light;
     width: 550px;
     max-width: 100%;
+}
+
+.save-notice {
+    width: fit-content;
+    max-width: 100%;
+    margin: 0;
+    flex: none;
+    padding: 10px 14px;
+    border: 1px solid #f4bf2f;
+    border-radius: 8px;
+    background: #fcf1d7;
+    box-shadow: var(--shadow);
+    color: #d6a951;
+    font-weight: 600;
+    opacity: 0;
+    animation: save-notice-in 0.8s ease forwards;
+}
+
+.save-notice.is-hiding {
+    animation: save-notice-out 0.6s ease forwards;
+}
+
+@keyframes save-notice-in {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes save-notice-out {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(10px);
+    }
 }

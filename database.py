@@ -196,3 +196,42 @@ def delete_listing(listing_id):
             "id": deleted_listing["id"],
             "image_public_ids": public_ids,
         }
+
+def add_favorite(listing_id):
+    with pool.connection() as conn, conn.cursor() as curr:
+        curr.execute(
+            """
+            insert into favorite (listing_id)
+            values (%s)
+            on conflict (listing_id) do nothing;
+            """,
+            (listing_id,),
+        )
+
+def get_favorites():
+    with pool.connection() as conn, conn.cursor() as curr:
+        curr.execute(
+            """
+            select listing.*
+            from favorite
+            join listing on listing.id = favorite.listing_id
+            order by favorite.id;
+            """
+        )
+        return curr.fetchall()
+
+def is_favorite(listing_id):
+    with pool.connection() as conn, conn.cursor() as curr:
+        curr.execute(
+            "select id from favorite where listing_id = %s;",
+            (listing_id,),
+        )
+        return curr.fetchone() is not None
+
+
+def remove_favorite(listing_id):
+    with pool.connection() as conn, conn.cursor() as curr:
+        curr.execute(
+            "delete from favorite where listing_id = %s;",
+            (listing_id,),
+        )
