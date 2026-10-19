@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from flask import Flask, abort, flash, redirect, render_template, request, session, url_for
 import database
 from authlib.integrations.flask_client import OAuth
+from urllib.parse import quote_plus, urlencode
 
 load_dotenv()
 cloudinary.reset_config()
@@ -57,20 +58,34 @@ oauth.register(
 @app.route("/")
 def render_home():
     listings = database.get_first_six()
+    user = session.get('user')
+    name = None
+    if user and user.get("userinfo"):
+        name = user.get("userinfo").get("name")
+        if name is None:
+            name = user.get("userinfo").get("email")
 
-    return render_template("home.html", listings=listings)
+    return render_template("home.html", listings=listings, name=name)
 
 
 @app.route("/chat")
 def chat():
-    return render_template("chat.html")
+    userinfo = session.get('user').get("userinfo")
+    name = userinfo.get("name")
+    if not name:
+        name = userinfo.get("email")
+    return render_template("chat.html", name=name)
 
 
 @app.route("/create_listing/", methods=["GET", "POST"])
 def create_listing():
+    userinfo = session.get('user').get("userinfo")
+    name = userinfo.get("name")
+    if not name:
+        name = userinfo.get("email")
     if request.method == "GET":
         return render_template(
-            "create_listing.html", google_maps_url=os.environ["GOOGLE_MAPS_URL"]
+            "create_listing.html", google_maps_url=os.environ["GOOGLE_MAPS_URL"], name=name
         )
     else:
         title = request.form.get("title")
@@ -143,11 +158,16 @@ def create_listing():
             app.logger.exception("Could not save listing and image records")
             abort(500, "The listing could not be saved.")
 
-        return redirect(url_for("listing", listing_id=listing["id"]))
+        return redirect(url_for("listing", listing_id=listing["id"], name=name))
 
 
 @app.route("/edit_listing/<int:listing_id>/", methods=["GET", "POST"])
 def edit_listing(listing_id):
+    userinfo = session.get('user').get("userinfo")
+    name = userinfo.get("name")
+    if not name:
+        name = userinfo.get("email")
+
     item = database.get_listing(listing_id)
     if item is None:
         abort(404)
@@ -227,57 +247,81 @@ def edit_listing(listing_id):
         delete_cloudinary_images(removed_public_ids)
         return redirect(url_for("listing", listing_id=listing_id))
 
-    return render_template("edit_listing.html", item=item, images=images)
+    return render_template("edit_listing.html", item=item, images=images, name=name)
 
 
 @app.route("/favorites/")
 def favorites():
+    userinfo = session.get('user').get("userinfo")
+    name = userinfo.get("name")
+    if not name:
+        name = userinfo.get("email")
     listings = database.get_favorites()
-    return render_template("favorites.html", listings=listings)
+    return render_template("favorites.html", listings=listings, name=name)
 
 
 @app.route("/feed/")
 def feed():
+    userinfo = session.get('user').get("userinfo")
+    name = userinfo.get("name")
+    if not name:
+        name = userinfo.get("email")
     listings = database.get_all_listings()
-    return render_template("feed.html", listings=listings)
+    return render_template("feed.html", listings=listings, name=name)
 
 
 @app.route("/listing/<int:listing_id>/")
 def listing(listing_id):
+    userinfo = session.get('user').get("userinfo")
+    name = userinfo.get("name")
+    if not name:
+        name = userinfo.get("email")
     item = database.get_listing(listing_id)
     if item is None:
         abort(404)
     images = database.get_listing_images(listing_id)
     saved = database.is_favorite(listing_id)
-    return render_template("listing.html", item=item, images=images, saved=saved)
+    return render_template("listing.html", item=item, images=images, saved=saved, name=name)
 
 @app.route("/listing/<int:listing_id>/favorite/", methods=["POST"])
 def favorite_listing(listing_id):
+    userinfo = session.get('user').get("userinfo")
+    name = userinfo.get("name")
+    if not name:
+        name = userinfo.get("email")
     item = database.get_listing(listing_id)
     if item is None:
         abort(404)
     database.add_favorite(listing_id)
     flash("Saved to Favorites")
-    return redirect(url_for("listing", listing_id=listing_id))
+    return redirect(url_for("listing", listing_id=listing_id, name=name))
 
 
 @app.route("/listing/<int:listing_id>/unfavorite/", methods=["POST"])
 def unfavorite_listing(listing_id):
+    userinfo = session.get('user').get("userinfo")
+    name = userinfo.get("name")
+    if not name:
+        name = userinfo.get("email")
     item = database.get_listing(listing_id)
     if item is None:
         abort(404)
     database.remove_favorite(listing_id)
     flash("Removed from Favorites")
-    return redirect(url_for("listing", listing_id=listing_id))
+    return redirect(url_for("listing", listing_id=listing_id, name=name))
 
 
 @app.route("/listing/<int:listing_id>/delete/", methods=["POST"])
 def delete_listing(listing_id):
+    userinfo = session.get('user').get("userinfo")
+    name = userinfo.get("name")
+    if not name:
+        name = userinfo.get("email")
     deleted_listing = database.delete_listing(listing_id)
     if deleted_listing is None:
         abort(404)
     delete_cloudinary_images(deleted_listing["image_public_ids"])
-    return redirect(url_for("feed"))
+    return redirect(url_for("feed", name=name))
 
 
 @app.route("/callback", methods=["GET", "POST"])
@@ -296,12 +340,37 @@ def login():
         redirect_uri=url_for("callback", _external=True)
     )
 
+@app.route("/logout")
+def logout():
+    """
+    Logs the user out of the session and from the Auth0 tenant
+    """
+    session.clear()
+    return redirect(
+        "https://" + domain
+        + "/v2/logout?"
+        + urlencode(
+            {
+                "returnTo": url_for("render_home", _external=True),
+                "client_id": client_id,
+            },
+            quote_via=quote_plus,
+        )
+    )
 
 @app.route("/messages/")
 def messages():
-    return render_template("messages.html")
+    userinfo = session.get('user').get("userinfo")
+    name = userinfo.get("name")
+    if not name:
+        name = userinfo.get("email")
+    return render_template("messages.html", name=name)
 
 
 @app.route("/profile/")
 def profile():
-    return render_template("profile.html")
+    userinfo = session.get('user').get("userinfo")
+    name = userinfo.get("name")
+    if not name:
+        name = userinfo.get("email")
+    return render_template("profile.html", name=name)

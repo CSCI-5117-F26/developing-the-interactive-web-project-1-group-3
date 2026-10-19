@@ -29,7 +29,13 @@
         <li class="pure-menu-item"><a href="/create_listing" class="pure-menu-link">Create Listing</a></li>
         <li class="pure-menu-item"><a href="/favorites" class="pure-menu-link">Favorites</a></li>
         <li class="pure-menu-item"><a href="/messages" class="pure-menu-link">Messages</a></li>
-        <li class="pure-menu-item"><a href="/profile" class="pure-menu-link">Profile</a></li>
+        {% block session %}
+        {% if name %}
+        <li class="pure-menu-item"><a href="/profile" class="pure-menu-link">Logged in: {{ name }}</a></li>
+        {% else %}
+        <li class="pure-menu-item"><a href="/login" class="pure-menu-link">Login</a></li>
+        {% endif %}
+        {% endblock %}
     </ul>
 </div>
 
