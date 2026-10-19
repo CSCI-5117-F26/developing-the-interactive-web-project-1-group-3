@@ -15,16 +15,25 @@ def setup():
     pool = ConnectionPool(
         os.environ["DATABASE_URL"], open=True, kwargs={"row_factory": dict_row}
     )
+    with pool.connection() as conn, conn.cursor() as curr:
+        curr.execute("alter table listing add column if not exists image_data bytea;")
+        curr.execute("alter table listing add column if not exists image_mimetype text;")
     # I'm not _actually_ convinced this is required, but the docs said to do it!
     atexit.register(pool.close)
 
-def add_listing(title, address, rent, leaseStart, leaseEnd, description):
+def add_listing(
+    title, address, rent, leaseStart, leaseEnd, description,
+    image_data=None, image_mimetype=None,
+):
     with pool.connection() as conn, conn.cursor() as curr:
         # A smarter Daniel would be validating the inputs here.
         # psycopg doesn't like "mixed" type lists so we cast the sound to 20 floats
         curr.execute(
-            "insert into listing (title, address, rent, leaseStart, leaseEnd, description) values (%s, %s, %s, %s, %s, %s) returning id;",
-            (title, address, rent, leaseStart, leaseEnd, description),
+            "insert into listing (title, address, rent, leaseStart, leaseEnd, description, image_data, image_mimetype) values (%s, %s, %s, %s, %s, %s, %s, %s) returning id;",
+            (
+                title, address, rent, leaseStart, leaseEnd, description,
+                image_data, image_mimetype,
+            ),
         )
         return curr.fetchone()
 
@@ -50,6 +59,14 @@ def get_listing(listing_id):
     with pool.connection() as conn, conn.cursor() as curr:
         curr.execute(
             "select * from listing where id = %s;",
+            (listing_id,),
+        )
+        return curr.fetchone()
+
+def get_listing_image(listing_id):
+    with pool.connection() as conn, conn.cursor() as curr:
+        curr.execute(
+            "select image_data, image_mimetype from listing where id = %s and image_data is not null;",
             (listing_id,),
         )
         return curr.fetchone()

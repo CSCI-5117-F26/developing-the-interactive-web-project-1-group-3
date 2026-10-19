@@ -2,7 +2,7 @@
 {% block content %}
 <h1>Create Listing</h1>
 
-<form method="Post" action="{{ url_for('create_listing') }}" class="pure-form pure-form-stacked">
+<form method="post" enctype="multipart/form-data" action="{{ url_for('create_listing') }}" class="pure-form pure-form-stacked">
     <fieldset>
         <div class="pure-control-group">
             <label for="title"> Title</label>
@@ -23,6 +23,9 @@
 
             <label for="description">Description</label>
             <textarea id="description" name="description" rows="5" required></textarea>
+
+            <label for="image">Listing image</label>
+            <input type="file" id="image" name="image" accept="image/png,image/jpeg,image/gif,image/webp">
 
         </div>
     <button type="submit" class="pure-button pure-button-primary">

@@ -1,5 +1,7 @@
 from functools import wraps 
-from flask import Flask, abort, render_template, request, session, redirect, url_for
+from flask import (
+    Flask, Response, abort, render_template, request, session, redirect, url_for,
+)
 import database
 import math
 import os
@@ -11,9 +13,28 @@ import random
 load_dotenv()
 
 app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
 database.setup()
 
 app.secret_key = os.environ["FLASK_SECRET"]
+
+def read_listing_image(upload):
+    if upload is None or upload.filename == "":
+        return None, None
+
+    image_data = upload.read()
+    if image_data.startswith(b"\x89PNG\r\n\x1a\n"):
+        image_mimetype = "image/png"
+    elif image_data.startswith(b"\xff\xd8\xff"):
+        image_mimetype = "image/jpeg"
+    elif image_data.startswith((b"GIF87a", b"GIF89a")):
+        image_mimetype = "image/gif"
+    elif image_data.startswith(b"RIFF") and image_data[8:12] == b"WEBP":
+        image_mimetype = "image/webp"
+    else:
+        abort(400, description="Upload a valid PNG, JPEG, GIF, or WebP image.")
+
+    return image_data, image_mimetype
 
 #oauth = OAuth(app)
 
@@ -52,8 +73,12 @@ def create_listing():
         leaseStart = request.form.get("lease_start_date")
         leaseEnd = request.form.get("lease_end_date")
         description = request.form.get("description")
+        image_data, image_mimetype = read_listing_image(request.files.get("image"))
 
-        database.add_listing(title, address, rent, leaseStart, leaseEnd, description)
+        database.add_listing(
+            title, address, rent, leaseStart, leaseEnd, description,
+            image_data, image_mimetype,
+        )
         listings = database.get_first_six()
         return render_template("home.html", listings=listings)
 
@@ -93,6 +118,17 @@ def listing(listing_id):
         abort(404)
     return render_template("listing.html", item=item)
 
+@app.route("/listing/<int:listing_id>/image/")
+def listing_image(listing_id):
+    image = database.get_listing_image(listing_id)
+    if image is None:
+        abort(404)
+    return Response(
+        image["image_data"],
+        mimetype=image["image_mimetype"],
+        headers={"X-Content-Type-Options": "nosniff"},
+    )
+
 @app.route("/listing/<int:listing_id>/delete/", methods=["POST"])
 def delete_listing(listing_id):
     deleted_listing = database.delete_listing(listing_id)
@@ -124,6 +160,4 @@ def messages():
 @app.route("/profile/")
 def profile():
     return render_template( "profile.html")
-
-
 

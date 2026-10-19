@@ -12,7 +12,7 @@
     </form>
 </div>
 
-<h1>Find a sublease near you</h1>
+<h1>Find a Sublease Near You!</h1>
 
 
 <div class="pure-g">
@@ -30,7 +30,11 @@
             {% for listing in listings %}
             <div class="pure-u-1-2">
                 <div class="listing-card">
+                    {% if listing.image_data %}
+                    <img class="listing-image" src="{{ url_for('listing_image', listing_id=listing.id) }}" alt="Photo of {{ listing.title }}">
+                    {% else %}
                     <div class="img-placeholder"></div>
+                    {% endif %}
                     <h2>{{ listing.title }}</h2>
                     <p>{{ listing.rent }}</p>
             
@@ -47,7 +51,6 @@
 </div>
 
 {% endblock %}
-
 
 
 

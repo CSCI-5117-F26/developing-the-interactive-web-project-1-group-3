@@ -10,5 +10,7 @@ create table listing (
     rent int not null,
     leaseStart date not null,
     leaseEnd date not null,
-    description text not null
+    description text not null,
+    image_data bytea,
+    image_mimetype text
 );
