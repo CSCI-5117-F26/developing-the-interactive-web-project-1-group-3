@@ -104,6 +104,21 @@ a {
     box-shadow: 0 4px 14px rgba(27, 57, 45, 0.04);
 }
 
+.home-search-bar {
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+.home-search-bar form {
+    justify-content: center;
+}
+
+.home-heading {
+    text-align: center;
+}
+
 .search-bar form {
     display: flex;
     gap: 10px;
