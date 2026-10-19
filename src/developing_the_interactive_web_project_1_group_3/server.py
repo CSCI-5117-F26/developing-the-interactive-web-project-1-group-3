@@ -70,19 +70,23 @@ def render_home():
 
 @app.route("/chat")
 def chat():
-    userinfo = session.get('user').get("userinfo")
-    name = userinfo.get("name")
-    if not name:
-        name = userinfo.get("email")
+    user = session.get('user')
+    name = None
+    if user and user.get("userinfo"):
+        name = user.get("userinfo").get("name")
+        if name is None:
+            name = user.get("userinfo").get("email")
     return render_template("chat.html", name=name)
 
 
 @app.route("/create_listing/", methods=["GET", "POST"])
 def create_listing():
-    userinfo = session.get('user').get("userinfo")
-    name = userinfo.get("name")
-    if not name:
-        name = userinfo.get("email")
+    user = session.get('user')
+    name = None
+    if user and user.get("userinfo"):
+        name = user.get("userinfo").get("name")
+        if name is None:
+            name = user.get("userinfo").get("email")
     if request.method == "GET":
         return render_template(
             "create_listing.html", google_maps_url=os.environ["GOOGLE_MAPS_URL"], name=name
@@ -163,10 +167,12 @@ def create_listing():
 
 @app.route("/edit_listing/<int:listing_id>/", methods=["GET", "POST"])
 def edit_listing(listing_id):
-    userinfo = session.get('user').get("userinfo")
-    name = userinfo.get("name")
-    if not name:
-        name = userinfo.get("email")
+    user = session.get('user')
+    name = None
+    if user and user.get("userinfo"):
+        name = user.get("userinfo").get("name")
+        if name is None:
+            name = user.get("userinfo").get("email")
 
     item = database.get_listing(listing_id)
     if item is None:
@@ -252,30 +258,36 @@ def edit_listing(listing_id):
 
 @app.route("/favorites/")
 def favorites():
-    userinfo = session.get('user').get("userinfo")
-    name = userinfo.get("name")
-    if not name:
-        name = userinfo.get("email")
+    user = session.get('user')
+    name = None
+    if user and user.get("userinfo"):
+        name = user.get("userinfo").get("name")
+        if name is None:
+            name = user.get("userinfo").get("email")
     listings = database.get_favorites()
     return render_template("favorites.html", listings=listings, name=name)
 
 
 @app.route("/feed/")
 def feed():
-    userinfo = session.get('user').get("userinfo")
-    name = userinfo.get("name")
-    if not name:
-        name = userinfo.get("email")
+    user = session.get('user')
+    name = None
+    if user and user.get("userinfo"):
+        name = user.get("userinfo").get("name")
+        if name is None:
+            name = user.get("userinfo").get("email")
     listings = database.get_all_listings()
     return render_template("feed.html", listings=listings, name=name)
 
 
 @app.route("/listing/<int:listing_id>/")
 def listing(listing_id):
-    userinfo = session.get('user').get("userinfo")
-    name = userinfo.get("name")
-    if not name:
-        name = userinfo.get("email")
+    user = session.get('user')
+    name = None
+    if user and user.get("userinfo"):
+        name = user.get("userinfo").get("name")
+        if name is None:
+            name = user.get("userinfo").get("email")
     item = database.get_listing(listing_id)
     if item is None:
         abort(404)
@@ -285,10 +297,12 @@ def listing(listing_id):
 
 @app.route("/listing/<int:listing_id>/favorite/", methods=["POST"])
 def favorite_listing(listing_id):
-    userinfo = session.get('user').get("userinfo")
-    name = userinfo.get("name")
-    if not name:
-        name = userinfo.get("email")
+    user = session.get('user')
+    name = None
+    if user and user.get("userinfo"):
+        name = user.get("userinfo").get("name")
+        if name is None:
+            name = user.get("userinfo").get("email")
     item = database.get_listing(listing_id)
     if item is None:
         abort(404)
@@ -299,10 +313,12 @@ def favorite_listing(listing_id):
 
 @app.route("/listing/<int:listing_id>/unfavorite/", methods=["POST"])
 def unfavorite_listing(listing_id):
-    userinfo = session.get('user').get("userinfo")
-    name = userinfo.get("name")
-    if not name:
-        name = userinfo.get("email")
+    user = session.get('user')
+    name = None
+    if user and user.get("userinfo"):
+        name = user.get("userinfo").get("name")
+        if name is None:
+            name = user.get("userinfo").get("email")
     item = database.get_listing(listing_id)
     if item is None:
         abort(404)
@@ -313,10 +329,12 @@ def unfavorite_listing(listing_id):
 
 @app.route("/listing/<int:listing_id>/delete/", methods=["POST"])
 def delete_listing(listing_id):
-    userinfo = session.get('user').get("userinfo")
-    name = userinfo.get("name")
-    if not name:
-        name = userinfo.get("email")
+    user = session.get('user')
+    name = None
+    if user and user.get("userinfo"):
+        name = user.get("userinfo").get("name")
+        if name is None:
+            name = user.get("userinfo").get("email")
     deleted_listing = database.delete_listing(listing_id)
     if deleted_listing is None:
         abort(404)
@@ -360,17 +378,21 @@ def logout():
 
 @app.route("/messages/")
 def messages():
-    userinfo = session.get('user').get("userinfo")
-    name = userinfo.get("name")
-    if not name:
-        name = userinfo.get("email")
+    user = session.get('user')
+    name = None
+    if user and user.get("userinfo"):
+        name = user.get("userinfo").get("name")
+        if name is None:
+            name = user.get("userinfo").get("email")
     return render_template("messages.html", name=name)
 
 
 @app.route("/profile/")
 def profile():
-    userinfo = session.get('user').get("userinfo")
-    name = userinfo.get("name")
-    if not name:
-        name = userinfo.get("email")
+    user = session.get('user')
+    name = None
+    if user and user.get("userinfo"):
+        name = user.get("userinfo").get("name")
+        if name is None:
+            name = user.get("userinfo").get("email")
     return render_template("profile.html", name=name)
