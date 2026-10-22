@@ -204,6 +204,26 @@ a {
     transform: translateY(-2px);
 }
 
+.favorite-card {
+    position: relative;
+}
+
+.favorite-heart {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(27, 57, 45, 0.16);
+    font-size: 16px;
+    line-height: 1;
+}
+
 .listing-card h2 {
     margin: 8px 0;
 }
@@ -244,6 +264,14 @@ a {
     margin: 0 0 18px;
 }
 
+.listing-title {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    min-width: 0;
+}
+
 .listing-heading h1 {
     margin: 0;
     overflow-wrap: anywhere;
@@ -276,6 +304,10 @@ a {
     background: linear-gradient(145deg, #e3eee6 0 48%, #d3e4d9 48% 100%);
 }
 
+.home-map {
+    height: 350px;
+}
+
 .details {
     padding: 26px;
 }
@@ -286,6 +318,22 @@ a {
 
 .details p strong {
     color: var(--muted);
+}
+
+.listing-image-gallery {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.listing-image-gallery img,
+.listing-image-gallery img:first-child {
+    grid-column: auto;
+    width: 100%;
+    height: 220px;
+    object-fit: contain;
+    background: #f7faf7;
+    border-radius: 6px;
 }
 
 .pure-form-stacked fieldset {
@@ -323,6 +371,55 @@ a {
 
 .pure-form-stacked button {
     margin-top: 18px;
+}
+
+.form-help,
+.form-error {
+    width: min(560px, 100%);
+    margin: 6px 0 0;
+    font-size: 0.9rem;
+}
+
+.form-help {
+    color: var(--muted);
+}
+
+.form-error {
+    min-height: 1.25em;
+    color: var(--danger);
+}
+
+.image-preview-list {
+    display: grid;
+    width: min(560px, 100%);
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.image-preview-item {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    background: #fbfdfb;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+}
+
+.image-preview-item img {
+    width: 72px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.image-preview-item span {
+    overflow-wrap: anywhere;
+}
+
+.pure-form-stacked .image-remove-button {
+    margin-top: 0;
 }
 
 .login-box {
@@ -376,5 +473,54 @@ a {
 
     .search-bar form {
         flex-wrap: wrap;
+    }
+}
+gmp-place-autocomplete {
+    color-scheme: light;
+    width: 550px;
+    max-width: 100%;
+}
+
+.save-notice {
+    width: fit-content;
+    max-width: 100%;
+    margin: 0;
+    flex: none;
+    padding: 10px 14px;
+    border: 1px solid #f4bf2f;
+    border-radius: 8px;
+    background: #fcf1d7;
+    box-shadow: var(--shadow);
+    color: #d6a951;
+    font-weight: 600;
+    opacity: 0;
+    animation: save-notice-in 0.8s ease forwards;
+}
+
+.save-notice.is-hiding {
+    animation: save-notice-out 0.6s ease forwards;
+}
+
+@keyframes save-notice-in {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes save-notice-out {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(10px);
     }
 }

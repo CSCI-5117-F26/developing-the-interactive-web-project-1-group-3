@@ -12,3 +12,6 @@ wheels/
 
 # Environment Variables
 .env
+
+# personal files(Max)
+command.md

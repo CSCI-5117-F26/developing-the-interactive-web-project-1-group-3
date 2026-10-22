@@ -3,7 +3,7 @@
 
 <h1>Edit Listing</h1>
 
-<form method="post" action="{{ url_for('edit_listing', listing_id=item.id) }}" class="pure-form pure-form-stacked">
+<form id="edit-listing-form" method="post" action="{{ url_for('edit_listing', listing_id=item.id) }}" class="pure-form pure-form-stacked" enctype="multipart/form-data">
 	<fieldset>
 		<label for="title">Title</label>
 		<input required minlength="3" type="text" id="title" name="title" value="{{ item.title }}">
@@ -23,8 +23,163 @@
 		<label for="description">Description</label>
 		<textarea required id="description" name="description" rows="5">{{ item.description }}</textarea>
 
-		<button type="submit" class="pure-button pure-button-primary">Save Changes</button>
+		<label for="images">Images</label>
+		<div id="existing-images" class="image-preview-list">
+			{% for image in images %}
+			<div class="image-preview-item" data-existing-image>
+				<img src="{{ image.image_url }}" alt="{{ image.alt_text or item.title }}">
+				<span>{{ image.alt_text or "Image" }}</span>
+				<button type="button" class="pure-button button-danger image-remove-button" data-image-id="{{ image.id }}">Remove</button>
+			</div>
+			{% endfor %}
+		</div>
+		<input type="file" id="images" name="images" accept="image/*" aria-describedby="images-help image-error" multiple>
+		<p id="images-help" class="form-help">A listing can have up to 10 images.</p>
+		<div id="image-preview" class="image-preview-list" aria-live="polite"></div>
+		<p id="image-error" class="form-error" role="alert"></p>
+
+		<button id="save-listing-button" type="submit" class="pure-button pure-button-primary">Save Changes</button>
+		<button type="button" class="pure-button" onclick="history.back()">Cancel</button>
 	</fieldset>
 </form>
+
+<script>
+	const form = document.getElementById("edit-listing-form");
+	const start = document.getElementById("lease_start_date");
+	const end = document.getElementById("lease_end_date");
+	function validateDates() {
+		end.min = start.value;
+		const invalid =
+			start.value &&
+			end.value &&
+			end.value < start.value;
+
+		end.setCustomValidity(
+			invalid
+				? "End date cannot be earlier than start date."
+				: ""
+		);
+
+		if (invalid) {
+			end.reportValidity();
+		}
+	}
+	start.addEventListener("change", validateDates);
+	end.addEventListener("change", validateDates);
+	validateDates();
+
+	const MAX_IMAGES = 10;
+	const imageInput = document.getElementById("images");
+	const imagePreview = document.getElementById("image-preview");
+	const imageError = document.getElementById("image-error");
+	const saveButton = document.getElementById("save-listing-button");
+	const selectedImages = [];
+
+	function imageKey(file) {
+		return `${file.name}:${file.size}:${file.lastModified}`;
+	}
+
+	function existingImageCount() {
+		return document.querySelectorAll("[data-existing-image]").length;
+	}
+
+	function syncImageInput() {
+		const transfer = new DataTransfer();
+		selectedImages.forEach(({ file }) => transfer.items.add(file));
+		imageInput.files = transfer.files;
+	}
+
+	function renderImagePreviews() {
+		imagePreview.replaceChildren();
+		selectedImages.forEach(({ file, previewUrl }, index) => {
+			const item = document.createElement("div");
+			item.className = "image-preview-item";
+
+			const image = document.createElement("img");
+			image.src = previewUrl;
+			image.alt = `Preview of ${file.name}`;
+
+			const fileName = document.createElement("span");
+			fileName.textContent = file.name;
+
+			const removeButton = document.createElement("button");
+			removeButton.type = "button";
+			removeButton.className = "pure-button button-danger image-remove-button";
+			removeButton.textContent = "Remove";
+			removeButton.addEventListener("click", () => {
+				const [removed] = selectedImages.splice(index, 1);
+				URL.revokeObjectURL(removed.previewUrl);
+				imageError.textContent = "";
+				syncImageInput();
+				renderImagePreviews();
+			});
+
+			item.append(image, fileName, removeButton);
+			imagePreview.append(item);
+		});
+	}
+
+	document.querySelectorAll("[data-image-id]").forEach((button) => {
+		button.addEventListener("click", () => {
+			const input = document.createElement("input");
+			input.type = "hidden";
+			input.name = "delete_image_ids";
+			input.value = button.dataset.imageId;
+			form.append(input);
+			button.closest("[data-existing-image]").remove();
+			imageError.textContent = "";
+		});
+	});
+
+	imageInput.addEventListener("change", () => {
+		const newFiles = Array.from(imageInput.files);
+		if (newFiles.length === 0) {
+			syncImageInput();
+			return;
+		}
+
+		const existingKeys = new Set(selectedImages.map(({ file }) => imageKey(file)));
+		let rejectedType = false;
+		let exceededLimit = false;
+
+		newFiles.forEach((file) => {
+			if (!file.type.startsWith("image/")) {
+				rejectedType = true;
+				return;
+			}
+			if (existingKeys.has(imageKey(file))) {
+				return;
+			}
+			if (existingImageCount() + selectedImages.length >= MAX_IMAGES) {
+				exceededLimit = true;
+				return;
+			}
+			selectedImages.push({
+				file,
+				previewUrl: URL.createObjectURL(file),
+			});
+			existingKeys.add(imageKey(file));
+		});
+
+		imageError.textContent = exceededLimit
+			? "A listing can have at most 10 images."
+			: rejectedType
+				? "Only image files can be uploaded."
+				: "";
+		syncImageInput();
+		renderImagePreviews();
+	});
+
+	form.addEventListener("submit", (event) => {
+		syncImageInput();
+		if (existingImageCount() + selectedImages.length > MAX_IMAGES) {
+			event.preventDefault();
+			imageError.textContent = "A listing can have at most 10 images.";
+			return;
+		}
+		saveButton.disabled = true;
+		saveButton.textContent = "Saving Changes...";
+	});
+</script>
 
 {% endblock %}
