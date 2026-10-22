@@ -17,7 +17,7 @@ def setup():
     pool = ConnectionPool(
         os.environ["DATABASE_URL"], open=False, min_size=4, max_size=20, kwargs={"row_factory": dict_row}
     )
-    pool.open()
+    # pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
         curr.execute("alter table listing add column if not exists image_data bytea;")
         curr.execute("alter table listing add column if not exists image_mimetype text;")
@@ -29,6 +29,7 @@ def add_listing(
     title, address, rent, leaseStart, leaseEnd, description,
     image_data=None, image_mimetype=None, owner_id=None,
 ):
+    pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
         # A smarter Daniel would be validating the inputs here.
         # psycopg doesn't like "mixed" type lists so we cast the sound to 20 floats
@@ -116,6 +117,7 @@ def get_listing(listing_id):
         return curr.fetchone()
 
 def get_listing_image(listing_id):
+    pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
         curr.execute(
             "select image_data, image_mimetype from listing where id = %s and image_data is not null;",
