@@ -17,30 +17,26 @@ def setup():
     pool = ConnectionPool(
         os.environ["DATABASE_URL"], open=False, min_size=4, max_size=20, kwargs={"row_factory": dict_row}
     )
+    pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
         curr.execute("alter table listing add column if not exists image_data bytea;")
         curr.execute("alter table listing add column if not exists image_mimetype text;")
+        curr.execute("alter table listing add column if not exists owner_id text;")
     # I'm not _actually_ convinced this is required, but the docs said to do it!
     atexit.register(pool.close)
 
-<<<<<<< HEAD
 def add_listing(
     title, address, rent, leaseStart, leaseEnd, description,
-    image_data=None, image_mimetype=None,
+    image_data=None, image_mimetype=None, owner_id=None,
 ):
-=======
-
-def add_listing(title, address, rent, leaseStart, leaseEnd, description):
-    pool.open()
->>>>>>> e6cbbe269632878bfb8c9629d85d2d8283843de4
     with pool.connection() as conn, conn.cursor() as curr:
         # A smarter Daniel would be validating the inputs here.
         # psycopg doesn't like "mixed" type lists so we cast the sound to 20 floats
         curr.execute(
-            "insert into listing (title, address, rent, leaseStart, leaseEnd, description, image_data, image_mimetype) values (%s, %s, %s, %s, %s, %s, %s, %s) returning id;",
+            "insert into listing (title, address, rent, leaseStart, leaseEnd, description, image_data, image_mimetype, owner_id) values (%s, %s, %s, %s, %s, %s, %s, %s, %s) returning id;",
             (
                 title, address, rent, leaseStart, leaseEnd, description,
-                image_data, image_mimetype,
+                image_data, image_mimetype, owner_id,
             ),
         )
         return curr.fetchone()
@@ -54,17 +50,18 @@ def add_listing_with_images(
     leaseEnd,
     description,
     images,
+    owner_id=None,
 ):
     pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
         curr.execute(
             """
             insert into listing
-                (title, address, rent, leaseStart, leaseEnd, description)
-            values (%s, %s, %s, %s, %s, %s)
+                (title, address, rent, leaseStart, leaseEnd, description, owner_id)
+            values (%s, %s, %s, %s, %s, %s, %s)
             returning id;
             """,
-            (title, address, rent, leaseStart, leaseEnd, description),
+            (title, address, rent, leaseStart, leaseEnd, description, owner_id),
         )
         listing = curr.fetchone()
 
@@ -118,7 +115,6 @@ def get_listing(listing_id):
         )
         return curr.fetchone()
 
-<<<<<<< HEAD
 def get_listing_image(listing_id):
     with pool.connection() as conn, conn.cursor() as curr:
         curr.execute(
@@ -126,7 +122,6 @@ def get_listing_image(listing_id):
             (listing_id,),
         )
         return curr.fetchone()
-=======
 
 def get_listing_images(listing_id):
     pool.open()
@@ -141,8 +136,6 @@ def get_listing_images(listing_id):
             (listing_id,),
         )
         return curr.fetchall()
-
->>>>>>> e6cbbe269632878bfb8c9629d85d2d8283843de4
 
 def update_listing(listing_id, title, address, rent, leaseStart, leaseEnd, description):
     pool.open()

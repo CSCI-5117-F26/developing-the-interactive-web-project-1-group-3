@@ -10,12 +10,10 @@ create table listing (
     rent int not null,
     leaseStart date not null,
     leaseEnd date not null,
-<<<<<<< HEAD
     description text not null,
     image_data bytea,
-    image_mimetype text
-=======
-    description text not null
+    image_mimetype text,
+    owner_id text
 );
 
 create table listing_images (
@@ -34,5 +32,4 @@ create table if not exists favorite (
     listing_id int not null unique
         references listing(id)
         on delete cascade
->>>>>>> e6cbbe269632878bfb8c9629d85d2d8283843de4
 );

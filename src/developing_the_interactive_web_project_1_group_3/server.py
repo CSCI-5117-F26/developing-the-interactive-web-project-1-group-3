@@ -1,21 +1,19 @@
-<<<<<<< HEAD
-from functools import wraps 
-from flask import (
-    Flask, Response, abort, render_template, request, session, redirect, url_for,
-)
-import database
-=======
-from functools import wraps
 from datetime import date
->>>>>>> e6cbbe269632878bfb8c9629d85d2d8283843de4
-import math
 import os
-import random
 import cloudinary
 import cloudinary.uploader
-import dotenv
 from dotenv import load_dotenv
-from flask import Flask, abort, flash, redirect, render_template, request, session, url_for
+from flask import (
+    Flask,
+    Response,
+    abort,
+    flash,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 import database
 from authlib.integrations.flask_client import OAuth
 from urllib.parse import quote_plus, urlencode
@@ -31,28 +29,12 @@ database.setup()
 app.secret_key = os.environ["FLASK_SECRET"]
 MAX_LISTING_IMAGES = 10
 
-<<<<<<< HEAD
-def read_listing_image(upload):
-    if upload is None or upload.filename == "":
-        return None, None
 
-    image_data = upload.read()
-    if image_data.startswith(b"\x89PNG\r\n\x1a\n"):
-        image_mimetype = "image/png"
-    elif image_data.startswith(b"\xff\xd8\xff"):
-        image_mimetype = "image/jpeg"
-    elif image_data.startswith((b"GIF87a", b"GIF89a")):
-        image_mimetype = "image/gif"
-    elif image_data.startswith(b"RIFF") and image_data[8:12] == b"WEBP":
-        image_mimetype = "image/webp"
-    else:
-        abort(400, description="Upload a valid PNG, JPEG, GIF, or WebP image.")
+def current_user_id():
+    user = session.get("user")
+    userinfo = user.get("userinfo") if user else None
+    return userinfo.get("sub") if userinfo else None
 
-    return image_data, image_mimetype
-
-#oauth = OAuth(app)
-=======
->>>>>>> e6cbbe269632878bfb8c9629d85d2d8283843de4
 
 def delete_cloudinary_images(public_ids):
     for public_id in public_ids:
@@ -89,6 +71,7 @@ oauth.register(
 @app.route("/")
 def render_home():
     listings = database.get_first_six()
+    user_id = current_user_id()
     user = session.get('user')
     name = None
     if user and user.get("userinfo"):
@@ -96,7 +79,9 @@ def render_home():
         if name is None:
             name = user.get("userinfo").get("email")
 
-    return render_template("home.html", listings=listings, name=name)
+    return render_template(
+        "home.html", listings=listings, name=name, user_id=user_id
+    )
 
 
 @app.route("/chat")
@@ -112,6 +97,10 @@ def chat():
 
 @app.route("/create_listing/", methods=["GET", "POST"])
 def create_listing():
+    user_id = current_user_id()
+    if not user_id:
+        abort(401)
+
     user = session.get('user')
     name = None
     if user and user.get("userinfo"):
@@ -129,16 +118,6 @@ def create_listing():
         leaseStart = request.form.get("lease_start_date")
         leaseEnd = request.form.get("lease_end_date")
         description = request.form.get("description")
-        image_data, image_mimetype = read_listing_image(request.files.get("image"))
-
-<<<<<<< HEAD
-        database.add_listing(
-            title, address, rent, leaseStart, leaseEnd, description,
-            image_data, image_mimetype,
-        )
-        listings = database.get_first_six()
-        return render_template("home.html", listings=listings)
-=======
         if not all((title, rent, leaseStart, leaseEnd, description)):
             abort(400, "All listing fields are required.")
 
@@ -196,6 +175,7 @@ def create_listing():
                 leaseEnd,
                 description,
                 uploaded_images,
+                user_id,
             )
         except Exception:
             delete_cloudinary_images(image["public_id"] for image in uploaded_images)
@@ -204,10 +184,12 @@ def create_listing():
 
         return redirect(url_for("listing", listing_id=listing["id"], name=name))
 
->>>>>>> e6cbbe269632878bfb8c9629d85d2d8283843de4
-
 @app.route("/edit_listing/<int:listing_id>/", methods=["GET", "POST"])
 def edit_listing(listing_id):
+    user_id = current_user_id()
+    if not user_id:
+        abort(401)
+
     user = session.get('user')
     name = None
     if user and user.get("userinfo"):
@@ -218,6 +200,8 @@ def edit_listing(listing_id):
     item = database.get_listing(listing_id)
     if item is None:
         abort(404)
+    if item["owner_id"] != user_id:
+        abort(403)
 
     images = database.get_listing_images(listing_id)
 
@@ -311,6 +295,7 @@ def favorites():
 
 @app.route("/feed/")
 def feed():
+    user_id = current_user_id()
     user = session.get('user')
     name = None
     if user and user.get("userinfo"):
@@ -318,11 +303,14 @@ def feed():
         if name is None:
             name = user.get("userinfo").get("email")
     listings = database.get_all_listings()
-    return render_template("feed.html", listings=listings, name=name)
+    return render_template(
+        "feed.html", listings=listings, name=name, user_id=user_id
+    )
 
 
 @app.route("/listing/<int:listing_id>/")
 def listing(listing_id):
+    user_id = current_user_id()
     user = session.get('user')
     name = None
     if user and user.get("userinfo"):
@@ -334,7 +322,14 @@ def listing(listing_id):
         abort(404)
     images = database.get_listing_images(listing_id)
     saved = database.is_favorite(listing_id)
-    return render_template("listing.html", item=item, images=images, saved=saved, name=name)
+    return render_template(
+        "listing.html",
+        item=item,
+        images=images,
+        saved=saved,
+        name=name,
+        user_id=user_id,
+    )
 
 @app.route("/listing/<int:listing_id>/favorite/", methods=["POST"])
 def favorite_listing(listing_id):
@@ -381,12 +376,22 @@ def listing_image(listing_id):
 
 @app.route("/listing/<int:listing_id>/delete/", methods=["POST"])
 def delete_listing(listing_id):
+    user_id = current_user_id()
+    if not user_id:
+        abort(401)
+
     user = session.get('user')
     name = None
     if user and user.get("userinfo"):
         name = user.get("userinfo").get("name")
         if name is None:
             name = user.get("userinfo").get("email")
+    listing = database.get_listing(listing_id)
+    if listing is None:
+        abort(404)
+    if listing["owner_id"] != user_id:
+        abort(403)
+
     deleted_listing = database.delete_listing(listing_id)
     if deleted_listing is None:
         abort(404)
@@ -441,10 +446,6 @@ def messages():
 
 @app.route("/profile/")
 def profile():
-<<<<<<< HEAD
-    return render_template( "profile.html")
-
-=======
     user = session.get('user')
     name = None
     if user and user.get("userinfo"):
@@ -452,4 +453,3 @@ def profile():
         if name is None:
             name = user.get("userinfo").get("email")
     return render_template("profile.html", name=name)
->>>>>>> e6cbbe269632878bfb8c9629d85d2d8283843de4
