@@ -57,11 +57,7 @@
     const addressError = document.getElementById("address-error");
     const submitButton = document.getElementById("create-listing-button");
 
-    function typedAddress() {
-        const placeAutocomplete = document.getElementById("location");
-        const input = placeAutocomplete?.shadowRoot?.querySelector("input");
-        return (input?.value || "").trim();
-    }
+    
 
     async function initAutocomplete() {
         await google.maps.importLibrary("places");
@@ -69,23 +65,30 @@
         placeAutocomplete.addEventListener(
         'gmp-select',
         async ({ placePrediction }) => {
+            address.value = "";
             const place = placePrediction.toPlace();
             await place.fetchFields({
                 fields: ['formattedAddress','location'],
         });
-            address.value = place.formattedAddress;
-            addressError.textContent = "";
-        // document.getElementById('latitude').value = place.location.lat();
-            //document.getElementById('longitude').value = place.location.lng();
+            if (place.formattedAddress && place.location) {
+                address.value = place.formattedAddress;
+                // document.getElementById("latitude").value = place.location.lat();
+                // document.getElementById("longitude").value = place.location.lng();
+                addressError.textContent = "";
+                console.log("Address selected:", address.value);
+            }
         });
 
-        //Keep a manually typed address when no suggestion is selected
-        placeAutocomplete.addEventListener("input", () => {
-            address.value = typedAddress();
-            addressError.textContent = "";
-            //document.getElementById("latitude").value = "";
-            //document.getElementById("longitude").value = "";
-            console.log("Address edited");
+       placeAutocomplete.addEventListener("input", () => {
+            address.value = "";
+        });
+
+        // Require a selected Google address
+        form.addEventListener("submit", (event) => {
+            if (!address.value) {
+                event.preventDefault();
+                addressError.textContent = "Please select an address from Google's suggestions.";
+            }
         });
     }
 
