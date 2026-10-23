@@ -86,7 +86,18 @@ def get_first_six():
         # A smarter Daniel would be validating the inputs here.
         # psycopg doesn't like "mixed" type lists so we cast the sound to 20 floats
         curr.execute(
-            "select * from listing order by id limit 6;",
+            """
+            select listing.*, (
+                select image_url
+                from listing_images
+                where listing_id = listing.id
+                order by display_order, id
+                limit 1
+            ) as preview_image_url
+            from listing
+            order by id
+            limit 6;
+            """,
         )
         return curr.fetchall()
 
@@ -97,7 +108,17 @@ def get_all_listings():
         # A smarter Daniel would be validating the inputs here.
         # psycopg doesn't like "mixed" type lists so we cast the sound to 20 floats
         curr.execute(
-            "select * from listing order by id;",
+            """
+            select listing.*, (
+                select image_url
+                from listing_images
+                where listing_id = listing.id
+                order by display_order, id
+                limit 1
+            ) as preview_image_url
+            from listing
+            order by id;
+            """,
         )
         return curr.fetchall()
 
@@ -225,7 +246,13 @@ def get_favorites():
     with pool.connection() as conn, conn.cursor() as curr:
         curr.execute(
             """
-            select listing.*
+            select listing.*, (
+                select image_url
+                from listing_images
+                where listing_id = listing.id
+                order by display_order, id
+                limit 1
+            ) as preview_image_url
             from favorite
             join listing on listing.id = favorite.listing_id
             order by favorite.id;
