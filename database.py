@@ -160,7 +160,7 @@ def update_listing(listing_id, title, address, location, rent, leaseStart, lease
     pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
         curr.execute(
-            "update listing set title = %s, address = %s, location = ST_GeogFromText(%s), rent = %s, leaseStart = %s, leaseEnd = %s, description = %s where id = %s;",
+            "update listing set title = %s, address = %s, location = COALESCE(ST_GeogFromText(NULLIF(%s, '')), location), rent = %s, leaseStart = %s, leaseEnd = %s, description = %s where id = %s;",
             (title, address, location, rent, leaseStart, leaseEnd, description, listing_id),
         )
 

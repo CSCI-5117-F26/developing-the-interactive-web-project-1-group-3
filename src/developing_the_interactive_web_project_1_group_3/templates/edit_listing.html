@@ -11,8 +11,7 @@
 		<label for="location">Address</label>
 		<gmp-place-autocomplete id="location" placeholder="{{ item.address }}"></gmp-place-autocomplete>
 		<input type="hidden" name="address" id="address" value="{{ item.address }}">
-		<input type="hidden" name="latitude" id="latitude">
-		<input type="hidden" name="longitude" id="longitude">
+		<input type="hidden" name="location" id="location_point">
 		<p id="address-error" class="form-error" role="alert"></p>
 
 		<label for="monthly_rent">Monthly rent</label>
@@ -61,14 +60,14 @@
         'gmp-select',
         async ({ placePrediction }) => {
             address.value = "";
+			document.getElementById("location_point").value = "";
             const place = placePrediction.toPlace();
             await place.fetchFields({
                 fields: ['formattedAddress','location'],
         });
             if (place.formattedAddress && place.location) {
                 address.value = place.formattedAddress;
-                // document.getElementById("latitude").value = place.location.lat();
-                // document.getElementById("longitude").value = place.location.lng();
+                document.getElementById("location_point").value = `POINT(${place.location.lng()} ${place.location.lat()})`;
                 addressError.textContent = "";
                 console.log("Address selected:", address.value);
             }
@@ -76,6 +75,7 @@
 
        placeAutocomplete.addEventListener("input", () => {
             address.value = "";
+            document.getElementById("location_point").value = "";
         });
 
         // Require a selected Google address

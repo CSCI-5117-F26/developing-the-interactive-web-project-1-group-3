@@ -114,11 +114,12 @@ def create_listing():
     else:
         title = request.form.get("title")
         address = request.form.get("address")
+        location = request.form.get("location")
         rent = request.form.get("monthly_rent")
         leaseStart = request.form.get("lease_start_date")
         leaseEnd = request.form.get("lease_end_date")
         description = request.form.get("description")
-        if not all((title, address, rent, leaseStart, leaseEnd, description)):
+        if not all((title, address, location, rent, leaseStart, leaseEnd, description)):
             abort(400, "All listing fields are required.")
 
         try:
@@ -170,6 +171,7 @@ def create_listing():
             listing = database.add_listing_with_images(
                 title,
                 address,
+                location,
                 rent,
                 leaseStart,
                 leaseEnd,
@@ -208,6 +210,7 @@ def edit_listing(listing_id):
     if request.method == "POST":
         title = request.form.get("title")
         address = request.form.get("address")
+        location = request.form.get("location")
         rent = request.form.get("monthly_rent")
         description = request.form.get("description")
         leaseStart = request.form.get("lease_start_date")
@@ -277,6 +280,7 @@ def edit_listing(listing_id):
                 listing_id,
                 title,
                 address,
+                location,
                 rent,
                 leaseStart,
                 leaseEnd,
