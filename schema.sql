@@ -1,3 +1,4 @@
+CREATE EXTENSION postgis;
 create table users(
     id serial primary key,
     name text not null
@@ -7,6 +8,7 @@ create table listing (
     id serial primary key,
     title text not null,
     address text not null,
+    location geography(Point, 4326) not null,
     rent int not null,
     leaseStart date not null,
     leaseEnd date not null,

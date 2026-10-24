@@ -21,7 +21,7 @@ def setup():
     atexit.register(pool.close)
 
 def add_listing(
-    title, address, rent, leaseStart, leaseEnd, description,
+    title, address, location, rent, leaseStart, leaseEnd, description,
     image_data=None, image_mimetype=None, owner_id=None,
 ):
     pool.open()
@@ -29,9 +29,9 @@ def add_listing(
         # A smarter Daniel would be validating the inputs here.
         # psycopg doesn't like "mixed" type lists so we cast the sound to 20 floats
         curr.execute(
-            "insert into listing (title, address, rent, leaseStart, leaseEnd, description, image_data, image_mimetype, owner_id) values (%s, %s, %s, %s, %s, %s, %s, %s, %s) returning id;",
+            "insert into listing (title, address, location, rent, leaseStart, leaseEnd, description, image_data, image_mimetype, owner_id) values (%s, %s, ST_GeogFromText(%s), %s, %s, %s, %s, %s, %s, %s) returning id;",
             (
-                title, address, rent, leaseStart, leaseEnd, description,
+                title, address, location, rent, leaseStart, leaseEnd, description,
                 image_data, image_mimetype, owner_id,
             ),
         )
@@ -41,6 +41,7 @@ def add_listing(
 def add_listing_with_images(
     title,
     address,
+    location,
     rent,
     leaseStart,
     leaseEnd,
@@ -53,11 +54,11 @@ def add_listing_with_images(
         curr.execute(
             """
             insert into listing
-                (title, address, rent, leaseStart, leaseEnd, description, owner_id)
-            values (%s, %s, %s, %s, %s, %s, %s)
+                (title, address, location, rent, leaseStart, leaseEnd, description, owner_id)
+            values (%s, %s, ST_GeogFromText(%s), %s, %s, %s, %s, %s)
             returning id;
             """,
-            (title, address, rent, leaseStart, leaseEnd, description, owner_id),
+            (title, address, location, rent, leaseStart, leaseEnd, description, owner_id),
         )
         listing = curr.fetchone()
 
@@ -155,12 +156,12 @@ def get_listing_images(listing_id):
         )
         return curr.fetchall()
 
-def update_listing(listing_id, title, address, rent, leaseStart, leaseEnd, description):
+def update_listing(listing_id, title, address, location, rent, leaseStart, leaseEnd, description):
     pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
         curr.execute(
-            "update listing set title = %s, address = %s, rent = %s, leaseStart = %s, leaseEnd = %s, description = %s where id = %s;",
-            (title, address, rent, leaseStart, leaseEnd, description, listing_id),
+            "update listing set title = %s, address = %s, location = ST_GeogFromText(%s), rent = %s, leaseStart = %s, leaseEnd = %s, description = %s where id = %s;",
+            (title, address, location, rent, leaseStart, leaseEnd, description, listing_id),
         )
 
 
