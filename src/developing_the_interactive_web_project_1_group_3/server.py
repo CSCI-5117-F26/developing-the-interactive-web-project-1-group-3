@@ -113,12 +113,12 @@ def create_listing():
         )
     else:
         title = request.form.get("title")
-        address = request.form.get("address") or ""
+        address = request.form.get("address")
         rent = request.form.get("monthly_rent")
         leaseStart = request.form.get("lease_start_date")
         leaseEnd = request.form.get("lease_end_date")
         description = request.form.get("description")
-        if not all((title, rent, leaseStart, leaseEnd, description)):
+        if not all((title, address, rent, leaseStart, leaseEnd, description)):
             abort(400, "All listing fields are required.")
 
         try:
@@ -206,9 +206,26 @@ def edit_listing(listing_id):
     images = database.get_listing_images(listing_id)
 
     if request.method == "POST":
+        title = request.form.get("title")
+        address = request.form.get("address")
+        rent = request.form.get("monthly_rent")
+        description = request.form.get("description")
         leaseStart = request.form.get("lease_start_date")
         leaseEnd = request.form.get("lease_end_date")
-        if date.fromisoformat(leaseEnd) < date.fromisoformat(leaseStart):
+
+        if not all((title, address, rent, leaseStart, leaseEnd, description)):
+            abort(400, "All listing fields are required.")
+
+        try:
+            rent = int(rent)
+            parsed_lease_start = date.fromisoformat(leaseStart)
+            parsed_lease_end = date.fromisoformat(leaseEnd)
+        except (TypeError, ValueError):
+            abort(400, "Rent and lease dates must be valid.")
+
+        if rent < 0:
+            abort(400, "Monthly rent cannot be negative.")
+        if parsed_lease_end < parsed_lease_start:
             abort(400, "End date cannot be earlier than start date.")
 
         try:
@@ -258,12 +275,12 @@ def edit_listing(listing_id):
         try:
             database.update_listing(
                 listing_id,
-                request.form.get("title"),
-                request.form.get("address"),
-                request.form.get("monthly_rent"),
-                request.form.get("lease_start_date"),
-                request.form.get("lease_end_date"),
-                request.form.get("description"),
+                title,
+                address,
+                rent,
+                leaseStart,
+                leaseEnd,
+                description,
             )
             removed_public_ids = database.update_listing_images(
                 listing_id,
@@ -272,13 +289,14 @@ def edit_listing(listing_id):
             )
         except Exception:
             delete_cloudinary_images(image["public_id"] for image in uploaded_images)
-            app.logger.exception("Could not update listing images")
-            abort(500, "The listing images could not be saved.")
+            app.logger.exception("Could not update listing")
+            abort(500, "The listing could not be updated.")
 
         delete_cloudinary_images(removed_public_ids)
         return redirect(url_for("listing", listing_id=listing_id))
 
-    return render_template("edit_listing.html", item=item, images=images, name=name)
+    return render_template("edit_listing.html", item=item, images=images, name=name, google_maps_url=os.environ["GOOGLE_MAPS_URL"])
+
 
 
 @app.route("/favorites/")

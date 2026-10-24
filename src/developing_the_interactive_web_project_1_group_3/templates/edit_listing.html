@@ -8,8 +8,12 @@
 		<label for="title">Title</label>
 		<input required minlength="3" type="text" id="title" name="title" value="{{ item.title }}">
 
-		<label for="address">Address</label>
-		<input required type="text" id="address" name="address" value="{{ item.address }}">
+		<label for="location">Address</label>
+		<gmp-place-autocomplete id="location" placeholder="{{ item.address }}"></gmp-place-autocomplete>
+		<input type="hidden" name="address" id="address" value="{{ item.address }}">
+		<input type="hidden" name="latitude" id="latitude">
+		<input type="hidden" name="longitude" id="longitude">
+		<p id="address-error" class="form-error" role="alert"></p>
 
 		<label for="monthly_rent">Monthly rent</label>
 		<input required min="0" step="1" type="number" id="monthly_rent" name="monthly_rent" value="{{ item.rent }}">
@@ -47,6 +51,42 @@
 	const form = document.getElementById("edit-listing-form");
 	const start = document.getElementById("lease_start_date");
 	const end = document.getElementById("lease_end_date");
+	const address = document.getElementById("address");
+    const addressError = document.getElementById("address-error");
+
+	async function initAutocomplete() {
+        await google.maps.importLibrary("places");
+        const placeAutocomplete = document.getElementById('location');
+        placeAutocomplete.addEventListener(
+        'gmp-select',
+        async ({ placePrediction }) => {
+            address.value = "";
+            const place = placePrediction.toPlace();
+            await place.fetchFields({
+                fields: ['formattedAddress','location'],
+        });
+            if (place.formattedAddress && place.location) {
+                address.value = place.formattedAddress;
+                // document.getElementById("latitude").value = place.location.lat();
+                // document.getElementById("longitude").value = place.location.lng();
+                addressError.textContent = "";
+                console.log("Address selected:", address.value);
+            }
+        });
+
+       placeAutocomplete.addEventListener("input", () => {
+            address.value = "";
+        });
+
+        // Require a selected Google address
+        form.addEventListener("submit", (event) => {
+            if (!address.value) {
+                event.preventDefault();
+                addressError.textContent = "Please select an address from Google's suggestions.";
+            }
+        });
+    }
+	
 	function validateDates() {
 		end.min = start.value;
 		const invalid =
