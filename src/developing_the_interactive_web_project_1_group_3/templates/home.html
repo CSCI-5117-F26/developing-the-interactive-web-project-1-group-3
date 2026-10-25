@@ -7,6 +7,7 @@
     <form action="/search" method="GET" class="pure-form">
         <input type="text" name="q" placeholder="search housing..." class="pure-input-rounded">
         <button class="pure-button pure-button-primary">Search</button>
+        
     </form>
 </div>
 
@@ -28,7 +29,9 @@
             {% for listing in listings %}
             <div class="pure-u-1-2">
                 <div class="listing-card">
-                    {% if listing.image_data %}
+                    {% if listing.preview_image_url %}
+                    <img class="listing-image" src="{{ listing.preview_image_url }}" alt="Photo of {{ listing.title }}">
+                    {% elif listing.image_data %}
                     <img class="listing-image" src="{{ url_for('listing_image', listing_id=listing.id) }}" alt="Photo of {{ listing.title }}">
                     {% else %}
                     <div class="img-placeholder"></div>

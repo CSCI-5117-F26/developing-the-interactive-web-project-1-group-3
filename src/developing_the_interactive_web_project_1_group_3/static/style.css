@@ -256,6 +256,12 @@ a {
     border-radius: 6px;
 }
 
+.listing-detail-image {
+    height: 220px;
+    object-fit: contain;
+    background: #f7faf7;
+}
+
 .listing-heading {
     display: flex;
     align-items: center;

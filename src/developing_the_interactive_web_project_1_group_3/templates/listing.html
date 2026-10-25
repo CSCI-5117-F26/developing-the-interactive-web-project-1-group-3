@@ -42,6 +42,8 @@
             >
             {% endfor %}
         </div>
+        {% elif item.image_data %}
+        <img class="listing-image listing-detail-image" src="{{ url_for('listing_image', listing_id=item.id) }}" alt="Photo of {{ item.title }}">
         {% else %}
         <div class="img-large"></div>
         {% endif %}

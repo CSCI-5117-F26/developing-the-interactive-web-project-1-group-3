@@ -17,11 +17,6 @@ def setup():
     pool = ConnectionPool(
         os.environ["DATABASE_URL"], open=False, min_size=4, max_size=20, kwargs={"row_factory": dict_row}
     )
-    pool.open()
-    with pool.connection() as conn, conn.cursor() as curr:
-        curr.execute("alter table listing add column if not exists image_data bytea;")
-        curr.execute("alter table listing add column if not exists image_mimetype text;")
-        curr.execute("alter table listing add column if not exists owner_id text;")
     # I'm not _actually_ convinced this is required, but the docs said to do it!
     atexit.register(pool.close)
 
@@ -29,6 +24,7 @@ def add_listing(
     title, address, rent, leaseStart, leaseEnd, description,
     image_data=None, image_mimetype=None, owner_id=None,
 ):
+    pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
         # A smarter Daniel would be validating the inputs here.
         # psycopg doesn't like "mixed" type lists so we cast the sound to 20 floats
@@ -90,7 +86,18 @@ def get_first_six():
         # A smarter Daniel would be validating the inputs here.
         # psycopg doesn't like "mixed" type lists so we cast the sound to 20 floats
         curr.execute(
-            "select * from listing order by id limit 6;",
+            """
+            select listing.*, (
+                select image_url
+                from listing_images
+                where listing_id = listing.id
+                order by display_order, id
+                limit 1
+            ) as preview_image_url
+            from listing
+            order by id
+            limit 6;
+            """,
         )
         return curr.fetchall()
 
@@ -101,10 +108,46 @@ def get_all_listings():
         # A smarter Daniel would be validating the inputs here.
         # psycopg doesn't like "mixed" type lists so we cast the sound to 20 floats
         curr.execute(
-            "select * from listing order by id;",
+            """
+            select listing.*, (
+                select image_url
+                from listing_images
+                where listing_id = listing.id
+                order by display_order, id
+                limit 1
+            ) as preview_image_url
+            from listing
+            order by id;
+            """,
         )
         return curr.fetchall()
 
+
+
+
+def search_listings(search_inp):
+    pool.open()
+    with pool.connection() as conn, conn.cursor() as curr:
+        # A smarter Daniel would be validating the inputs here.
+        # psycopg doesn't like "mixed" type lists so we cast the sound to 20 floats
+        curr.execute(
+            """
+            select listing.*, (
+                select image_url
+                from listing_images
+                where listing_id = listing.id
+                order by display_order, id
+                limit 1
+            ) as preview_image_url
+            from listing
+            WHERE title ILIKE %s
+
+            order by id;
+            """,
+            ("%"+search_inp+"%",)
+
+        )
+        return curr.fetchall()
 
 def get_listing(listing_id):
     pool.open()
@@ -116,6 +159,7 @@ def get_listing(listing_id):
         return curr.fetchone()
 
 def get_listing_image(listing_id):
+    pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
         curr.execute(
             "select image_data, image_mimetype from listing where id = %s and image_data is not null;",
@@ -228,7 +272,13 @@ def get_favorites():
     with pool.connection() as conn, conn.cursor() as curr:
         curr.execute(
             """
-            select listing.*
+            select listing.*, (
+                select image_url
+                from listing_images
+                where listing_id = listing.id
+                order by display_order, id
+                limit 1
+            ) as preview_image_url
             from favorite
             join listing on listing.id = favorite.listing_id
             order by favorite.id;
@@ -252,7 +302,6 @@ def remove_favorite(listing_id):
             (listing_id,),
         )
 
-
 def get_or_create_user_id(auth0_id, name):
     with pool.connection() as conn, conn.cursor() as curr:
         curr.execute(
@@ -273,3 +322,4 @@ def getUsername(id):
                 (id,),
             )
             return curr.fetchone()["name"]
+

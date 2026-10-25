@@ -8,13 +8,18 @@
         <button class="pure-button pure-button-primary">Search</button>
     </form>
 </div>
+{% if search_inp %}
+    <p>Search results for: {{search_inp}}</p>
+{% endif %}
 
 
 <div class="pure-g">
         {% for listing in listings %}
         <div class="pure-u-1-2">
             <div class="listing-card">
-                {% if listing.image_data %}
+                {% if listing.preview_image_url %}
+                <img class="listing-image" src="{{ listing.preview_image_url }}" alt="Photo of {{ listing.title }}">
+                {% elif listing.image_data %}
                 <img class="listing-image" src="{{ url_for('listing_image', listing_id=listing.id) }}" alt="Photo of {{ listing.title }}">
                 {% else %}
                 <div class="img-placeholder"></div>

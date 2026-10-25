@@ -313,6 +313,28 @@ def feed():
         "feed.html", listings=listings, name=name, user_id=user_id
     )
 
+@app.route("/search")
+def search():
+    user_id = current_user_id()
+    user = session.get('user')
+    name = None
+    if user and user.get("userinfo"):
+        name = user.get("userinfo").get("name")
+        if name is None:
+            name = user.get("userinfo").get("email")
+    search_inp=request.args.get("q","")
+    listings=database.search_listings(search_inp)
+    return render_template(
+        "feed.html", listings=listings, name=name, user_id=user_id,search_inp=search_inp
+    )
+
+
+
+    
+
+
+
+
 
 @app.route("/listing/<int:listing_id>/")
 def listing(listing_id):
@@ -334,6 +356,8 @@ def listing(listing_id):
         name=name,
         user_id=user_id,
     )
+
+
 
 @app.route("/listing/<int:listing_id>/favorite/", methods=["POST"])
 def favorite_listing(listing_id):
