@@ -315,7 +315,7 @@ def get_or_create_user_id(auth0_id, name):
         return curr.fetchone()["id"]
 
 
-def getUsername(id):
+def get_username(id):
     with pool.connection() as conn, conn.cursor() as curr:
             curr.execute(
                 "select name from users where id = %s",

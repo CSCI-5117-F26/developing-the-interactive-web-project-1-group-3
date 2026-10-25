@@ -51,7 +51,7 @@ def getUserID():
     return userID
 
 def getUserName(id):
-    username = database.getUsername(id)
+    username = database.get_username(id)
     if username:
         return username
     else:
@@ -204,7 +204,7 @@ def create_listing():
 def edit_listing(listing_id):
     user_id = getUserID()
     if user_id:
-        name = getUserName()
+        name = getUserName(user_id)
 
     item = database.get_listing(listing_id)
     if item is None:
