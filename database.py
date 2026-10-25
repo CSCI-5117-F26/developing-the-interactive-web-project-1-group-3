@@ -88,7 +88,9 @@ def get_first_six():
         # psycopg doesn't like "mixed" type lists so we cast the sound to 20 floats
         curr.execute(
             """
-            select listing.*, (
+            select listing.*,
+            st_y(location::geometry) AS lat,
+            st_x(location::geometry) AS lng, (
                 select image_url
                 from listing_images
                 where listing_id = listing.id
@@ -96,7 +98,7 @@ def get_first_six():
                 limit 1
             ) as preview_image_url
             from listing
-            order by id
+            order by id desc
             limit 6;
             """,
         )

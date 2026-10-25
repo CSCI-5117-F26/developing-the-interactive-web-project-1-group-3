@@ -311,7 +311,8 @@ a {
 }
 
 .home-map {
-    height: 350px;
+    width: 100%;
+    height: 450px;
 }
 
 .details {

@@ -102,7 +102,7 @@ def render_home():
         name = "Guest"
 
     return render_template(
-        "home.html", listings=listings, name=name, user_id=user_id
+        "home.html", listings=listings, name=name, user_id=user_id, google_home_map_url=os.environ["GOOGLE_HOME_MAP_URL"],
     )
 
 
