@@ -451,8 +451,8 @@ def logout():
             quote_via=quote_plus,
         )
     )
-@app.route("/messages", defaults={"conversation_id": None})
-@app.route("/messages/<int:conversation_id>")
+@app.route("/messages/", defaults={"conversation_id": None})
+@app.route("/messages/<int:conversation_id>/")
 def messages(conversation_id):
     user_id = getUserID()
     if user_id:
@@ -469,12 +469,12 @@ def messages(conversation_id):
 
     return render_template("messages.html", name=name)
 
-@app.route("/404")
+@app.route("/404/")
 def fourOfour():
     return render_template("404.html")
 
 
-@app.route("/profile")
+@app.route("/profile/")
 def profile():
     user_id = getUserID()
     if user_id:
