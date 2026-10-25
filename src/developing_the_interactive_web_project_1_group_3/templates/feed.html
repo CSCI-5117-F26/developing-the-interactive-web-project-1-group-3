@@ -8,6 +8,9 @@
         <button class="pure-button pure-button-primary">Search</button>
     </form>
 </div>
+{% if search_inp %}
+    <p>Search results for: {{search_inp}}</p>
+{% endif %}
 
 
 <div class="pure-g">

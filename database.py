@@ -124,6 +124,32 @@ def get_all_listings():
         return curr.fetchall()
 
 
+
+
+def search_listings(search_inp):
+    pool.open()
+    with pool.connection() as conn, conn.cursor() as curr:
+        # A smarter Daniel would be validating the inputs here.
+        # psycopg doesn't like "mixed" type lists so we cast the sound to 20 floats
+        curr.execute(
+            """
+            select listing.*, (
+                select image_url
+                from listing_images
+                where listing_id = listing.id
+                order by display_order, id
+                limit 1
+            ) as preview_image_url
+            from listing
+            WHERE title ILIKE %s
+
+            order by id;
+            """,
+            ("%"+search_inp+"%",)
+
+        )
+        return curr.fetchall()
+
 def get_listing(listing_id):
     pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
@@ -276,3 +302,25 @@ def remove_favorite(listing_id):
             "delete from favorite where listing_id = %s;",
             (listing_id,),
         )
+
+def get_or_create_user_id(auth0_id, name):
+    with pool.connection() as conn, conn.cursor() as curr:
+        curr.execute(
+            "insert into users (auth0_id, name) "
+            "values (%s, %s) "
+            "on conflict (auth0_id) "
+            "do update set name = excluded.name "
+            "returning id",
+            (auth0_id, name,),
+        )
+        return curr.fetchone()["id"]
+
+
+def get_username(id):
+    with pool.connection() as conn, conn.cursor() as curr:
+            curr.execute(
+                "select name from users where id = %s",
+                (id,),
+            )
+            return curr.fetchone()["name"]
+
