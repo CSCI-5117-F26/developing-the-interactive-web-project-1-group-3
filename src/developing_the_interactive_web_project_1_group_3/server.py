@@ -1,3 +1,5 @@
+from gevent import monkey
+monkey.patch_all()
 from datetime import date
 import os
 import cloudinary
