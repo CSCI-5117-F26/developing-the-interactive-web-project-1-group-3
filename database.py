@@ -258,6 +258,7 @@ def delete_listing(listing_id):
         }
 
 def add_favorite(listing_id):
+    pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
         curr.execute(
             """
@@ -269,6 +270,7 @@ def add_favorite(listing_id):
         )
 
 def get_favorites():
+    pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
         curr.execute(
             """
@@ -287,6 +289,7 @@ def get_favorites():
         return curr.fetchall()
 
 def is_favorite(listing_id):
+    pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
         curr.execute(
             "select id from favorite where listing_id = %s;",
@@ -296,6 +299,7 @@ def is_favorite(listing_id):
 
 
 def remove_favorite(listing_id):
+    pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
         curr.execute(
             "delete from favorite where listing_id = %s;",
@@ -303,6 +307,7 @@ def remove_favorite(listing_id):
         )
 
 def get_or_create_user_id(auth0_id, name):
+    pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
         curr.execute(
             "insert into users (auth0_id, name) "
@@ -316,10 +321,82 @@ def get_or_create_user_id(auth0_id, name):
 
 
 def get_username(id):
+    pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
             curr.execute(
                 "select name from users where id = %s",
                 (id,),
             )
             return curr.fetchone()["name"]
+
+def get_or_create_conversation(listing_id, userOne, userTwo):
+    pool.open()
+    with pool.connection() as conn, conn.cursor() as curr:
+                curr.execute(
+                    "select id from conversations " \
+                    "where listing_id = %s "
+                    "and user1_id = %s "
+                    "and user2_id = %s",
+                    (listing_id, userOne, userTwo),
+                )
+
+                conversation = curr.fetchone()
+
+                if conversation:
+                    return conversation["id"]
+                else:
+                    curr.execute(
+                        "insert into conversations " \
+                        "(listing_id, user1_id, user2_id) "
+                        "values (%s, %s, %s) "
+                        "returning id",
+                        (listing_id, userOne, userTwo),
+                    )
+                    return curr.fetchone()["id"]
+                
+def get_conversation(conversation_id):
+    pool.open()
+    with pool.connection() as conn, conn.cursor() as curr:
+                curr.execute(
+                    "select * from conversations where id = %s",
+                    (conversation_id,),
+                )
+                return curr.fetchone()
+
+
+def get_all_conversations(user_id):
+    pool.open()
+    with pool.connection() as conn, conn.cursor() as curr:
+        curr.execute(
+            "select * from conversations " \
+            "where user1_id = %s or user2_id = %s",
+            (user_id, user_id),
+        )
+        return curr.fetchall()
+
+def get_messages(conversation_id):
+     pool.open()
+     with pool.connection() as conn, conn.cursor() as curr:
+        curr.execute(
+            "select * from messages " \
+            "where conversation_id = %s "
+            "order by id asc",
+            (conversation_id,),
+        )
+        return curr.fetchall()
+
+def save_message(conversation_id, sender_id, message):
+    pool.open()
+    with pool.connection() as conn, conn.cursor() as curr:
+            curr.execute(
+                "insert into messages (conversation_id, sender_id, message)" \
+                "values (%s, %s, %s)"
+                "returning *",
+                (conversation_id, sender_id, message),
+            )
+            return curr.fetchone()
+     
+
+
+
 
