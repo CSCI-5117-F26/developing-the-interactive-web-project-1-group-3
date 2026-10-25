@@ -17,10 +17,12 @@ from flask import (
     url_for,
     jsonify,
 )
+
 import database
 from authlib.integrations.flask_client import OAuth
+from authlib.integrations.base_client.errors import OAuthError
 from urllib.parse import quote_plus, urlencode
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, join_room
 
 load_dotenv()
 cloudinary.reset_config()
@@ -58,6 +60,29 @@ def getUserName(id):
         return username
     else:
         return None
+
+def check_user_conversation(conversation_id, user_id):
+    conversation = database.get_conversation(conversation_id)
+
+    if not conversation:
+        return False
+
+    return ((conversation["user1_id"] == user_id) or (conversation["user2_id"] == user_id))
+
+def get_user_convo_list(user_id):
+    conversations = database.get_all_conversations(user_id)
+    list = []
+
+    for conversation in conversations:
+        if int(conversation["user1_id"] == int(user_id)):
+            other_user = conversation["user2_id"]
+        else:
+            other_user = conversation["user1_id"]
+
+        list.append({"id": conversation["id"], "other_user_name": database.get_username(other_user)})
+
+    return list
+
 
 
 def delete_cloudinary_images(public_ids):
@@ -425,7 +450,11 @@ def callback():
     """
     Callback redirect from Auth0
    """
-    token = oauth.auth0.authorize_access_token()
+    try:
+        token = oauth.auth0.authorize_access_token()
+    except OAuthError:
+        message = "Unable to Login"
+        return redirect(url_for("fourOfour", message=message))
     session["user"] = token
     return redirect("/")
 
@@ -454,26 +483,32 @@ def logout():
         )
     )
 @app.route("/messages/", defaults={"conversation_id": None})
-@app.route("/messages/<int:conversation_id>/")
+@app.route("/messages/<string:conversation_id>/")
 def messages(conversation_id):
     user_id = getUserID()
-    if user_id:
-        name = getUserName(user_id)
-    else:
-        name = "Guest"
+    if not user_id:
+        return redirect("/login")
 
-    if conversation_id:
-        owner, self = conversation_id.split("+")
-        if user_id == self:
-            print("access")
-        else:
-            print("No Access")
+    conversations = get_user_convo_list(user_id)
+    messages = []
 
-    return render_template("messages.html", name=name)
+    if conversation_id is not None:
+        if not check_user_conversation(conversation_id, user_id):
+            message = "You aren't a part of this conversation!"
+            return redirect(url_for("fourOfour", message=message))
+        
+        messages = database.get_messages(conversation_id)
+        for message in messages:
+            message["sender_name"] = getUserName(message["sender_id"])
+
+    name = getUserName(user_id)
+
+    return render_template("messages.html", name=name, user_id=user_id, conversation_id=conversation_id, conversations=conversations, messages=messages)
 
 @app.route("/404/")
 def fourOfour():
-    return render_template("404.html")
+    message = request.args.get("message")
+    return render_template("404.html", message=message)
 
 
 @app.route("/profile/")
@@ -493,19 +528,102 @@ def message_owner(listing_id):
     if not user_id:
         return redirect("/login")
 
-    listing = database.getlisting(listing_id)
+    listing = database.get_listing(listing_id)
 
     if not listing:
         return redirect("/404")
 
-    listing_id = listing["owner_id"]
+    owner_id = listing.get("owner_id")
 
-    if user_id == listing_id:
-        return redirect("/404")
+    if listing_id is None:
+        message = "This listing has no owner"
+        return redirect(url_for("fourOfour", message=message))
 
-    conversation_id=str(listing_id) + "+" + str(user_id)
+    owner_id = int(listing_id)
+
+    if user_id == (listing_id):
+        message = "You can't Message yourself!"
+        return redirect(url_for("fourOfour", message=message))
+
+    user1_id = min(user_id, owner_id)
+    user2_id = max(user_id, owner_id)
+
+    conversation_id=database.get_or_create_conversation(listing_id, user1_id, user2_id)
 
     return redirect(url_for("messages", conversation_id=conversation_id))
+
+
+@socketio.on("join_conversation")
+def handle_join_conversation(data):
+    user_id = getUserID()
+
+    if not user_id:
+        return {"error": "Please Login First"}
+
+    try:
+        conversation_id = int(data.get("conversation_id"))
+    except (TypeError, ValueError):
+        message = "Bad Conversation ID"
+        return redirect(url_for("fourOfour", message=message))
+
+    if not check_user_conversation(conversation_id, user_id):
+        message = "You Don't have Access to this Conversation"
+        return redirect(url_for("fourOfour", message=message))
+    
+    join_room(str(conversation_id))
+
+    return {"success": True}
+
+
+@socketio.on("new_message")
+def handle_send_message(data):
+    user_id = getUserID()
+
+    if not user_id:
+        return redirect("/login")
+
+    if not isinstance(data, dict):
+            message = "Bad data format"
+            return redirect(url_for("fourOfour", message=message))
+
+    try:
+        conversation_id = int(data.get("conversation_id"))
+    except (TypeError, ValueError):
+        message = "Bad Conversation ID"
+        return redirect(url_for("fourOfour", message=message))
+
+    message = data.get("message")
+
+    if not isinstance(message, str) or not message:
+        message = "Bad message format"
+        return redirect(url_for("fourOfour", message=message))
+
+    if len(message) > 2000:
+        message = "Message Way too Long"
+        return redirect(url_for("fourOfour", message=message))
+
+    if not check_user_conversation(conversation_id, user_id):
+        message = "You Don't have Access to this Conversation"
+        return redirect(url_for("fourOfour", message=message))
+
+    saved_message = database.save_message(conversation_id, user_id, message)
+
+    emit("chat", {
+        "conversation_id": conversation_id,
+        "sender_id": int(user_id),
+        "username": getUserName(user_id) or "Anonymous User",
+        "message": saved_message["message"]
+    }, to=str(conversation_id))
+
+    return {"success": True}
+
+    
+    
+
+
+
+
+
 
     
 

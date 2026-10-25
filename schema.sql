@@ -34,3 +34,17 @@ create table if not exists favorite (
         references listing(id)
         on delete cascade
 );
+
+create table conversations (
+    id serial primary key,
+    listing_id int references listing(id) on delete cascade,
+    user1_id int references users(id),
+    user2_id int references users(id)
+);
+
+create table messages (
+    id serial primary key,
+    conversation_id int references conversations(id) on delete cascade,
+    sender_id int references users(id),
+    message text not null
+);
