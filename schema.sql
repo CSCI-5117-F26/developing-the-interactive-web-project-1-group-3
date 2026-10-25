@@ -1,5 +1,6 @@
 create table users(
     id serial primary key,
+    auth0_id text unique not null,
     name text not null
 );
 
