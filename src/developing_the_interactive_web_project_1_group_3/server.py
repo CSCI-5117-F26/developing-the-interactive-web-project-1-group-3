@@ -315,13 +315,11 @@ def feed():
 
 @app.route("/search")
 def search():
-    user_id = current_user_id()
-    user = session.get('user')
-    name = None
-    if user and user.get("userinfo"):
-        name = user.get("userinfo").get("name")
-        if name is None:
-            name = user.get("userinfo").get("email")
+    user_id = getUserID()
+    if user_id:
+        name = getUserName(user_id)
+    else:
+        name = "Guest"
     search_inp=request.args.get("q","")
     listings=database.search_listings(search_inp)
     return render_template(
@@ -469,7 +467,6 @@ def messages(conversation_id):
         else:
             print("No Access")
 
-    print(conversation_id)
     return render_template("messages.html", name=name)
 
 @app.route("/404")
