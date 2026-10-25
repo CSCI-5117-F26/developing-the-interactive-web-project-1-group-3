@@ -13,10 +13,12 @@ from flask import (
     request,
     session,
     url_for,
+    jsonify,
 )
 import database
 from authlib.integrations.flask_client import OAuth
 from urllib.parse import quote_plus, urlencode
+from flask_socketio import SocketIO, emit
 
 load_dotenv()
 cloudinary.reset_config()
@@ -25,15 +27,35 @@ cloudinary.config(secure=True)
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 5 * 1024 * 1024
 database.setup()
+socketio = SocketIO()
 
 app.secret_key = os.environ["FLASK_SECRET"]
+socketio.init_app(app)
 MAX_LISTING_IMAGES = 10
 
-
-def current_user_id():
+def getUserID():
     user = session.get("user")
-    userinfo = user.get("userinfo") if user else None
-    return userinfo.get("sub") if userinfo else None
+    if user:
+        userinfo = user.get("userinfo")
+        if userinfo:
+            auth0sub = userinfo.get("sub")
+        else: 
+            return None
+    else:
+        return None
+
+    name = "Unknown User"
+    if userinfo and userinfo.get("name"):
+        name = userinfo.get("name")
+    userID = database.get_or_create_user_id(auth0sub, name)
+    return userID
+
+def getUserName(id):
+    username = database.getUsername(id)
+    if username:
+        return username
+    else:
+        return None
 
 
 def delete_cloudinary_images(public_ids):
@@ -71,13 +93,11 @@ oauth.register(
 @app.route("/")
 def render_home():
     listings = database.get_first_six()
-    user_id = current_user_id()
-    user = session.get('user')
-    name = None
-    if user and user.get("userinfo"):
-        name = user.get("userinfo").get("name")
-        if name is None:
-            name = user.get("userinfo").get("email")
+    user_id = getUserID()
+    if user_id:
+        name = getUserName(user_id)
+    else:
+        name = "Guest"
 
     return render_template(
         "home.html", listings=listings, name=name, user_id=user_id
@@ -86,27 +106,23 @@ def render_home():
 
 @app.route("/chat")
 def chat():
-    user = session.get('user')
-    name = None
-    if user and user.get("userinfo"):
-        name = user.get("userinfo").get("name")
-        if name is None:
-            name = user.get("userinfo").get("email")
+    user_id = getUserID()
+    if user_id:
+        name = getUserName(user_id)
+    else:
+        name = "Guest"
+    
     return render_template("chat.html", name=name)
 
 
 @app.route("/create_listing/", methods=["GET", "POST"])
 def create_listing():
-    user_id = current_user_id()
-    if not user_id:
-        abort(401)
-
-    user = session.get('user')
-    name = None
-    if user and user.get("userinfo"):
-        name = user.get("userinfo").get("name")
-        if name is None:
-            name = user.get("userinfo").get("email")
+    user_id = getUserID()
+    if user_id:
+        name = getUserName(user_id)
+    else:
+        name = "Guest"
+    
     if request.method == "GET":
         return render_template(
             "create_listing.html", google_maps_url=os.environ["GOOGLE_MAPS_URL"], name=name
@@ -186,16 +202,9 @@ def create_listing():
 
 @app.route("/edit_listing/<int:listing_id>/", methods=["GET", "POST"])
 def edit_listing(listing_id):
-    user_id = current_user_id()
-    if not user_id:
-        abort(401)
-
-    user = session.get('user')
-    name = None
-    if user and user.get("userinfo"):
-        name = user.get("userinfo").get("name")
-        if name is None:
-            name = user.get("userinfo").get("email")
+    user_id = getUserID()
+    if user_id:
+        name = getUserName()
 
     item = database.get_listing(listing_id)
     if item is None:
@@ -283,25 +292,22 @@ def edit_listing(listing_id):
 
 @app.route("/favorites/")
 def favorites():
-    user = session.get('user')
-    name = None
-    if user and user.get("userinfo"):
-        name = user.get("userinfo").get("name")
-        if name is None:
-            name = user.get("userinfo").get("email")
+    user_id = getUserID()
+    if user_id:
+        name = getUserName(user_id)
+    else:
+        name = "Guest"
     listings = database.get_favorites()
     return render_template("favorites.html", listings=listings, name=name)
 
 
 @app.route("/feed/")
 def feed():
-    user_id = current_user_id()
-    user = session.get('user')
-    name = None
-    if user and user.get("userinfo"):
-        name = user.get("userinfo").get("name")
-        if name is None:
-            name = user.get("userinfo").get("email")
+    user_id = getUserID()
+    if user_id:
+        name = getUserName(user_id)
+    else:
+        name = "Guest"
     listings = database.get_all_listings()
     return render_template(
         "feed.html", listings=listings, name=name, user_id=user_id
@@ -310,13 +316,11 @@ def feed():
 
 @app.route("/listing/<int:listing_id>/")
 def listing(listing_id):
-    user_id = current_user_id()
-    user = session.get('user')
-    name = None
-    if user and user.get("userinfo"):
-        name = user.get("userinfo").get("name")
-        if name is None:
-            name = user.get("userinfo").get("email")
+    user_id = getUserID()
+    if user_id:
+        name = getUserName(user_id)
+    else:
+        name = "Guest"
     item = database.get_listing(listing_id)
     if item is None:
         abort(404)
@@ -333,12 +337,11 @@ def listing(listing_id):
 
 @app.route("/listing/<int:listing_id>/favorite/", methods=["POST"])
 def favorite_listing(listing_id):
-    user = session.get('user')
-    name = None
-    if user and user.get("userinfo"):
-        name = user.get("userinfo").get("name")
-        if name is None:
-            name = user.get("userinfo").get("email")
+    user_id = getUserID()
+    if user_id:
+        name = getUserName(user_id)
+    else:
+        name = "Guest"
     item = database.get_listing(listing_id)
     if item is None:
         abort(404)
@@ -349,12 +352,11 @@ def favorite_listing(listing_id):
 
 @app.route("/listing/<int:listing_id>/unfavorite/", methods=["POST"])
 def unfavorite_listing(listing_id):
-    user = session.get('user')
-    name = None
-    if user and user.get("userinfo"):
-        name = user.get("userinfo").get("name")
-        if name is None:
-            name = user.get("userinfo").get("email")
+    user_id = getUserID()
+    if user_id:
+        name = getUserName(user_id)
+    else:
+        name = "Guest"
     item = database.get_listing(listing_id)
     if item is None:
         abort(404)
@@ -376,16 +378,11 @@ def listing_image(listing_id):
 
 @app.route("/listing/<int:listing_id>/delete/", methods=["POST"])
 def delete_listing(listing_id):
-    user_id = current_user_id()
-    if not user_id:
-        abort(401)
-
-    user = session.get('user')
-    name = None
-    if user and user.get("userinfo"):
-        name = user.get("userinfo").get("name")
-        if name is None:
-            name = user.get("userinfo").get("email")
+    user_id = getUserID()
+    if user_id:
+        name = getUserName(user_id)
+    else:
+        name = "Guest"
     listing = database.get_listing(listing_id)
     if listing is None:
         abort(404)
@@ -432,24 +429,60 @@ def logout():
             quote_via=quote_plus,
         )
     )
+@app.route("/messages", defaults={"conversation_id": None})
+@app.route("/messages/<int:conversation_id>")
+def messages(conversation_id):
+    user_id = getUserID()
+    if user_id:
+        name = getUserName(user_id)
+    else:
+        name = "Guest"
 
-@app.route("/messages/")
-def messages():
-    user = session.get('user')
-    name = None
-    if user and user.get("userinfo"):
-        name = user.get("userinfo").get("name")
-        if name is None:
-            name = user.get("userinfo").get("email")
+    if conversation_id:
+        owner, self = conversation_id.split("+")
+        if user_id == self:
+            print("access")
+        else:
+            print("No Access")
+
+    print(conversation_id)
     return render_template("messages.html", name=name)
 
+@app.route("/404")
+def fourOfour():
+    return render_template("404.html")
 
-@app.route("/profile/")
+
+@app.route("/profile")
 def profile():
-    user = session.get('user')
-    name = None
-    if user and user.get("userinfo"):
-        name = user.get("userinfo").get("name")
-        if name is None:
-            name = user.get("userinfo").get("email")
+    user_id = getUserID()
+    if user_id:
+        name = getUserName(user_id)
+    else:
+        name = "Guest"
     return render_template("profile.html", name=name)
+
+
+@app.route("/message_owner/<int:listing_id>", methods=["POST"])
+def message_owner(listing_id):
+    user_id = getUserID()
+
+    if not user_id:
+        return redirect("/login")
+
+    listing = database.getlisting(listing_id)
+
+    if not listing:
+        return redirect("/404")
+
+    listing_id = listing["owner_id"]
+
+    if user_id == listing_id:
+        return redirect("/404")
+
+    conversation_id=str(listing_id) + "+" + str(user_id)
+
+    return redirect(url_for("messages", conversation_id=conversation_id))
+
+    
+

@@ -251,3 +251,25 @@ def remove_favorite(listing_id):
             "delete from favorite where listing_id = %s;",
             (listing_id,),
         )
+
+
+def get_or_create_user_id(auth0_id, name):
+    with pool.connection() as conn, conn.cursor() as curr:
+        curr.execute(
+            "insert into users (auth0_id, name) "
+            "values (%s, %s) "
+            "on conflict (auth0_id) "
+            "do update set name = excluded.name "
+            "returning id",
+            (auth0_id, name,),
+        )
+        return curr.fetchone()["id"]
+
+
+def getUsername(id):
+    with pool.connection() as conn, conn.cursor() as curr:
+            curr.execute(
+                "select name from users where id = %s",
+                (id,),
+            )
+            return curr.fetchone()["name"]
