@@ -16,7 +16,7 @@ create table listing (
     description text not null,
     image_data bytea,
     image_mimetype text,
-    owner_id int references users(id)
+    owner_id text
 );
 
 create table listing_images (
