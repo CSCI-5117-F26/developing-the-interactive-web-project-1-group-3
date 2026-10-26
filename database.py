@@ -17,10 +17,6 @@ def setup():
     pool = ConnectionPool(
         os.environ["DATABASE_URL"], open=False, min_size=4, max_size=20, kwargs={"row_factory": dict_row}
     )
-    with pool.connection() as conn, conn.cursor() as curr:
-        curr.execute(
-            "alter table listing alter column owner_id type integer using owner_id::integer;"
-        )
     # I'm not _actually_ convinced this is required, but the docs said to do it!
     atexit.register(pool.close)
 
