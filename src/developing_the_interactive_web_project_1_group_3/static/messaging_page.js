@@ -55,14 +55,23 @@ socket.on("chat", function (data) {
 
         let li = document.createElement("li");
 
-        if (Number(data.sender_id) === Number(user_id))
+        if (Number(data.sender_id) === Number(user_id)) {
             sender = "You"
-        else {
-            sender = (data.username || "Anonomyous user")
+            li.classList.add("message-own");
+        } else {
+            sender = (data.username || "Anonymous User")
+            li.classList.add("message-incoming");
         }
 
-        li.textContent = sender + ": " + data.message;
+        li.classList.add("message-bubble");
+        let senderLabel = document.createElement("strong");
+        senderLabel.classList.add("message-sender");
+        senderLabel.textContent = sender;
 
+        let messageText = document.createElement("span");
+        messageText.textContent = data.message;
+
+        li.append(senderLabel, messageText);
         messages.appendChild(li)
 
         chatblock = document.getElementById("chatMessagesBlock");

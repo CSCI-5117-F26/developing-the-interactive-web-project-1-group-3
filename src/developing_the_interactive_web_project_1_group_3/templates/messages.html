@@ -7,15 +7,18 @@
 {% endblock %}
 
 {% block content %}
-<h1>Messages</h1>
+<div class="messages-heading">
+    <h1>Messages</h1>
+    <p>Keep your conversations going in one place.</p>
+</div>
 <script id="getConversation" type="application/json">
-    {{{"conversation_id": conversation_id, "user_id": user_id} | tojson }}
+    {{ {"conversation_id": conversation_id, "user_id": user_id} | tojson }}
 </script>
 
 <div id="messagingBlock">
     <div id="chatList" class="pure-u-1-4">
         {% for conversation in conversations %}
-        <a href="{{url_for('messages', conversation_id=conversation.id)}}">
+        <a href="{{ url_for('messages', conversation_id=conversation.id) }}"{% if conversation_id == conversation.id %} aria-current="page"{% endif %}>
             {{conversation.other_user_name}}
         </a>
         {% else %}
@@ -28,23 +31,24 @@
     <div id="currentChat" class="pure-u-3-4">
         {% if conversation_id is not none %}
         <div id="chatMessagesBlock" class="top-block">
-            <ul id="chat-messages">
+            <ul id="chat-messages" aria-live="polite">
             {% for message in messages %}
-                <li>
-                    <strong>
+                <li class="message-bubble{% if message.sender_id == user_id %} message-own{% else %} message-incoming{% endif %}">
+                    <strong class="message-sender">
                         {% if message.sender_id == user_id %}
                             You
                         {% else %}
-                            {{ message.sender_name or "Anonomyous User"}}
+                            {{ message.sender_name or "Anonymous User"}}
                         {% endif %}
-                    </strong>: {{ message.message }}
+                    </strong>
+                    <span>{{ message.message }}</span>
                 </li>
             {% endfor %}
             </ul>
         </div>
 
         <div id="textMessagesBlock" class="bottom-block">
-            <input type="text" id="message" placeholder="Enter Message" maxlength="2000">
+            <input type="text" id="message" placeholder="Write a message and press Enter..." aria-label="Write a message" maxlength="2000">
         </div>
         {% else %}
             <p>Select a conversation to start messaging!</p>

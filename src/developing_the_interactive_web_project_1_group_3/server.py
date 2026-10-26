@@ -571,21 +571,21 @@ def message_owner(listing_id):
         return redirect("/404")
 
     owner_id = listing.get("owner_id")
-    
-    if listing_id is None:
+
+    if owner_id is None:
         message = "This listing has no owner"
         return redirect(url_for("fourOfour", message=message))
 
-    owner_id = int(listing.get("owner_id"))
+    owner_id = int(owner_id)
 
-    if user_id == (listing_id):
+    if user_id == owner_id:
         message = "You can't Message yourself!"
         return redirect(url_for("fourOfour", message=message))
 
     user1_id = min(user_id, owner_id)
     user2_id = max(user_id, owner_id)
 
-    conversation_id=database.get_or_create_conversation(listing_id, user1_id, user2_id)
+    conversation_id = database.get_or_create_conversation(listing_id, user1_id, user2_id)
 
     return redirect(url_for("messages", conversation_id=conversation_id))
 

@@ -17,6 +17,10 @@ def setup():
     pool = ConnectionPool(
         os.environ["DATABASE_URL"], open=False, min_size=4, max_size=20, kwargs={"row_factory": dict_row}
     )
+    with pool.connection() as conn, conn.cursor() as curr:
+        curr.execute(
+            "alter table listing alter column owner_id type integer using owner_id::integer;"
+        )
     # I'm not _actually_ convinced this is required, but the docs said to do it!
     atexit.register(pool.close)
 
@@ -344,7 +348,8 @@ def get_or_create_user_id(auth0_id, name):
             "returning id",
             (auth0_id, name,),
         )
-        return curr.fetchone()["id"]
+        row = curr.fetchone()
+        return row["id"] if row else None
 
 
 def get_username(id):
@@ -354,7 +359,8 @@ def get_username(id):
                 "select name from users where id = %s",
                 (id,),
             )
-            return curr.fetchone()["name"]
+            row = curr.fetchone()
+            return row["name"] if row else None
 
 def get_or_create_conversation(listing_id, userOne, userTwo):
     pool.open()
