@@ -7,26 +7,49 @@
 {% endblock %}
 
 {% block content %}
-<h1>Testing</h1>
+<h1>Messages</h1>
+<script id="getConversation" type="application/json">
+    {{{"conversation_id": conversation_id, "user_id": user_id} | tojson }}
+</script>
 
 <div id="messagingBlock">
-    <div id="chatList" class="pure-u-1-4"> 
-        
+    <div id="chatList" class="pure-u-1-4">
+        {% for conversation in conversations %}
+        <a href="{{url_for('messages', conversation_id=conversation.id)}}">
+            {{conversation.other_user_name}}
+        </a>
+        {% else %}
+
+        <p>No Conversations!</p>
+
+        {% endfor %}
     </div>
 
     <div id="currentChat" class="pure-u-3-4">
+        {% if conversation_id is not none %}
         <div id="chatMessagesBlock" class="top-block">
             <ul id="chat-messages">
-                Test
+            {% for message in messages %}
+                <li>
+                    <strong>
+                        {% if message.sender_id == user_id %}
+                            You
+                        {% else %}
+                            {{ message.sender_name or "Anonomyous User"}}
+                        {% endif %}
+                    </strong>: {{ message.message }}
+                </li>
+            {% endfor %}
             </ul>
         </div>
 
         <div id="textMessagesBlock" class="bottom-block">
-            <input type="text" id="message" placeholder="Enter Message">
+            <input type="text" id="message" placeholder="Enter Message" maxlength="2000">
         </div>
+        {% else %}
+            <p>Select a conversation to start messaging!</p>
+        {% endif %}
     </div>
-
-
 </div>
 
 {% endblock %}
