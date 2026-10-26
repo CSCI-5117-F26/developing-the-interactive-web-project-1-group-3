@@ -350,6 +350,29 @@ def search():
         "feed.html", listings=listings, name=name, user_id=user_id,search_inp=search_inp, google_home_map_url=os.environ["GOOGLE_HOME_MAP_URL"]
     )
 
+@app.route("/dist-filter")
+def dist_filter():
+    user_id = getUserID()
+    if user_id:
+        name = getUserName(user_id)
+    else:
+        name = "Guest"
+    location = request.args.get("location", "")
+    distance = request.args.get("distance", type=int)
+    address = request.args.get("address", "")
+    if not location or distance not in (1, 3, 5, 10, 25):
+        abort(400, description="Invalid location or distance")
+    listings = database.search_by_distance(location, distance)
+    return render_template(
+        "feed.html",
+        listings=listings,
+        name=name,
+        user_id=user_id,
+        search_inp=address,
+        search_mode="distance",
+        google_home_map_url=os.environ["GOOGLE_HOME_MAP_URL"]
+    )
+
 @app.route("/listing/<int:listing_id>/")
 def listing(listing_id):
     user_id = getUserID()

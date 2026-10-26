@@ -153,6 +153,29 @@ def search_listings(search_inp):
         )
         return curr.fetchall()
 
+def search_by_distance(location, distance):
+    pool.open()
+    with pool.connection() as conn, conn.cursor() as curr:
+        curr.execute(
+            """
+            select listing.*,
+            st_y(location::geometry) AS lat,
+            st_x(location::geometry) AS lng,ST_Distance(location, ST_GeogFromText('SRID=4326;' || %s))
+              AS distance, (
+                select image_url
+                from listing_images
+                where listing_id = listing.id
+                order by display_order, id
+                limit 1
+            ) as preview_image_url
+            from listing
+            WHERE ST_DWithin(location,ST_GeogFromText('SRID=4326;' || %s),%s)
+            ORDER BY distance ASC;
+
+            """,(location,location, distance * 1609.344)
+        )
+        return curr.fetchall()
+
 def get_listing(listing_id):
     pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
