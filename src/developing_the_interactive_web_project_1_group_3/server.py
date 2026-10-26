@@ -127,7 +127,7 @@ def render_home():
         name = "Guest"
 
     return render_template(
-        "home.html", listings=listings, name=name, user_id=user_id
+        "home.html", listings=listings, name=name, user_id=user_id, google_home_map_url=os.environ["GOOGLE_HOME_MAP_URL"],
     )
 
 
@@ -156,12 +156,13 @@ def create_listing():
         )
     else:
         title = request.form.get("title")
-        address = request.form.get("address") or ""
+        address = request.form.get("address")
+        location = request.form.get("location")
         rent = request.form.get("monthly_rent")
         leaseStart = request.form.get("lease_start_date")
         leaseEnd = request.form.get("lease_end_date")
         description = request.form.get("description")
-        if not all((title, rent, leaseStart, leaseEnd, description)):
+        if not all((title, address, location, rent, leaseStart, leaseEnd, description)):
             abort(400, "All listing fields are required.")
 
         try:
@@ -213,6 +214,7 @@ def create_listing():
             listing = database.add_listing_with_images(
                 title,
                 address,
+                location,
                 rent,
                 leaseStart,
                 leaseEnd,
@@ -242,9 +244,27 @@ def edit_listing(listing_id):
     images = database.get_listing_images(listing_id)
 
     if request.method == "POST":
+        title = request.form.get("title")
+        address = request.form.get("address")
+        location = request.form.get("location")
+        rent = request.form.get("monthly_rent")
+        description = request.form.get("description")
         leaseStart = request.form.get("lease_start_date")
         leaseEnd = request.form.get("lease_end_date")
-        if date.fromisoformat(leaseEnd) < date.fromisoformat(leaseStart):
+
+        if not all((title, address, rent, leaseStart, leaseEnd, description)):
+            abort(400, "All listing fields are required.")
+
+        try:
+            rent = int(rent)
+            parsed_lease_start = date.fromisoformat(leaseStart)
+            parsed_lease_end = date.fromisoformat(leaseEnd)
+        except (TypeError, ValueError):
+            abort(400, "Rent and lease dates must be valid.")
+
+        if rent < 0:
+            abort(400, "Monthly rent cannot be negative.")
+        if parsed_lease_end < parsed_lease_start:
             abort(400, "End date cannot be earlier than start date.")
 
         try:
@@ -294,12 +314,13 @@ def edit_listing(listing_id):
         try:
             database.update_listing(
                 listing_id,
-                request.form.get("title"),
-                request.form.get("address"),
-                request.form.get("monthly_rent"),
-                request.form.get("lease_start_date"),
-                request.form.get("lease_end_date"),
-                request.form.get("description"),
+                title,
+                address,
+                location,
+                rent,
+                leaseStart,
+                leaseEnd,
+                description,
             )
             removed_public_ids = database.update_listing_images(
                 listing_id,
@@ -308,13 +329,14 @@ def edit_listing(listing_id):
             )
         except Exception:
             delete_cloudinary_images(image["public_id"] for image in uploaded_images)
-            app.logger.exception("Could not update listing images")
-            abort(500, "The listing images could not be saved.")
+            app.logger.exception("Could not update listing")
+            abort(500, "The listing could not be updated.")
 
         delete_cloudinary_images(removed_public_ids)
         return redirect(url_for("listing", listing_id=listing_id))
 
-    return render_template("edit_listing.html", item=item, images=images, name=name)
+    return render_template("edit_listing.html", item=item, images=images, name=name, google_maps_url=os.environ["GOOGLE_MAPS_URL"])
+
 
 
 @app.route("/favorites/")
@@ -337,7 +359,7 @@ def feed():
         name = "Guest"
     listings = database.get_all_listings()
     return render_template(
-        "feed.html", listings=listings, name=name, user_id=user_id
+        "feed.html", listings=listings, name=name, user_id=user_id, google_home_map_url=os.environ["GOOGLE_HOME_MAP_URL"]
     )
 
 @app.route("/search")
@@ -350,16 +372,31 @@ def search():
     search_inp=request.args.get("q","")
     listings=database.search_listings(search_inp)
     return render_template(
-        "feed.html", listings=listings, name=name, user_id=user_id,search_inp=search_inp
+        "feed.html", listings=listings, name=name, user_id=user_id,search_inp=search_inp, google_home_map_url=os.environ["GOOGLE_HOME_MAP_URL"]
     )
 
-
-
-    
-
-
-
-
+@app.route("/dist-filter")
+def dist_filter():
+    user_id = getUserID()
+    if user_id:
+        name = getUserName(user_id)
+    else:
+        name = "Guest"
+    location = request.args.get("location", "")
+    distance = request.args.get("distance", type=int)
+    address = request.args.get("address", "")
+    if not location or distance not in (1, 3, 5, 10, 25):
+        abort(400, description="Invalid location or distance")
+    listings = database.search_by_distance(location, distance)
+    return render_template(
+        "feed.html",
+        listings=listings,
+        name=name,
+        user_id=user_id,
+        search_inp=address,
+        search_mode="distance",
+        google_home_map_url=os.environ["GOOGLE_HOME_MAP_URL"]
+    )
 
 @app.route("/listing/<int:listing_id>/")
 def listing(listing_id):

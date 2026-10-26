@@ -311,7 +311,8 @@ a {
 }
 
 .home-map {
-    height: 350px;
+    width: 100%;
+    height: 450px;
 }
 
 .details {
@@ -529,4 +530,56 @@ gmp-place-autocomplete {
         opacity: 0;
         transform: translateY(10px);
     }
+}
+
+.price-tag {
+    background-color: #4285f4;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 10px;
+    padding: 5px 8px;
+    position: relative;
+    transform: translateY(-8px);
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.price-tag::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    transform: translate(-50%, 0);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #4285f4;
+}
+
+.search-toggle {
+    display: flex;
+    width: fit-content;
+    margin: 0 auto 12px;
+    padding: 4px;
+    background: #f1f3f5;
+    border-radius: 10px;
+}
+
+.toggle-btn {
+    border: none;
+    background: transparent;
+    padding: 8px 20px;
+    border-radius: 7px;
+    cursor: pointer;
+}
+
+.toggle-btn.active {
+    background: white;
+    font-weight: 600;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+[hidden] {
+    display: none !important;
 }

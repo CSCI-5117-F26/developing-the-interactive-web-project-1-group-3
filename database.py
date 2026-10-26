@@ -21,7 +21,7 @@ def setup():
     atexit.register(pool.close)
 
 def add_listing(
-    title, address, rent, leaseStart, leaseEnd, description,
+    title, address, location, rent, leaseStart, leaseEnd, description,
     image_data=None, image_mimetype=None, owner_id=None,
 ):
     pool.open()
@@ -29,9 +29,9 @@ def add_listing(
         # A smarter Daniel would be validating the inputs here.
         # psycopg doesn't like "mixed" type lists so we cast the sound to 20 floats
         curr.execute(
-            "insert into listing (title, address, rent, leaseStart, leaseEnd, description, image_data, image_mimetype, owner_id) values (%s, %s, %s, %s, %s, %s, %s, %s, %s) returning id;",
+            "insert into listing (title, address, location, rent, leaseStart, leaseEnd, description, image_data, image_mimetype, owner_id) values (%s, %s, ST_GeogFromText(%s), %s, %s, %s, %s, %s, %s, %s) returning id;",
             (
-                title, address, rent, leaseStart, leaseEnd, description,
+                title, address, location, rent, leaseStart, leaseEnd, description,
                 image_data, image_mimetype, owner_id,
             ),
         )
@@ -41,6 +41,7 @@ def add_listing(
 def add_listing_with_images(
     title,
     address,
+    location,
     rent,
     leaseStart,
     leaseEnd,
@@ -53,11 +54,11 @@ def add_listing_with_images(
         curr.execute(
             """
             insert into listing
-                (title, address, rent, leaseStart, leaseEnd, description, owner_id)
-            values (%s, %s, %s, %s, %s, %s, %s)
+                (title, address, location, rent, leaseStart, leaseEnd, description, owner_id)
+            values (%s, %s, ST_GeogFromText(%s), %s, %s, %s, %s, %s)
             returning id;
             """,
-            (title, address, rent, leaseStart, leaseEnd, description, owner_id),
+            (title, address, location, rent, leaseStart, leaseEnd, description, owner_id),
         )
         listing = curr.fetchone()
 
@@ -87,7 +88,9 @@ def get_first_six():
         # psycopg doesn't like "mixed" type lists so we cast the sound to 20 floats
         curr.execute(
             """
-            select listing.*, (
+            select listing.*,
+            st_y(location::geometry) AS lat,
+            st_x(location::geometry) AS lng, (
                 select image_url
                 from listing_images
                 where listing_id = listing.id
@@ -95,7 +98,7 @@ def get_first_six():
                 limit 1
             ) as preview_image_url
             from listing
-            order by id
+            order by id desc
             limit 6;
             """,
         )
@@ -109,7 +112,9 @@ def get_all_listings():
         # psycopg doesn't like "mixed" type lists so we cast the sound to 20 floats
         curr.execute(
             """
-            select listing.*, (
+            select listing.*, 
+            st_y(location::geometry) AS lat,
+            st_x(location::geometry) AS lng, (
                 select image_url
                 from listing_images
                 where listing_id = listing.id
@@ -122,9 +127,6 @@ def get_all_listings():
         )
         return curr.fetchall()
 
-
-
-
 def search_listings(search_inp):
     pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
@@ -132,7 +134,9 @@ def search_listings(search_inp):
         # psycopg doesn't like "mixed" type lists so we cast the sound to 20 floats
         curr.execute(
             """
-            select listing.*, (
+            select listing.*,
+            st_y(location::geometry) AS lat,
+            st_x(location::geometry) AS lng, (
                 select image_url
                 from listing_images
                 where listing_id = listing.id
@@ -146,6 +150,29 @@ def search_listings(search_inp):
             """,
             ("%"+search_inp+"%",)
 
+        )
+        return curr.fetchall()
+
+def search_by_distance(location, distance):
+    pool.open()
+    with pool.connection() as conn, conn.cursor() as curr:
+        curr.execute(
+            """
+            select listing.*,
+            st_y(location::geometry) AS lat,
+            st_x(location::geometry) AS lng,ST_Distance(location, ST_GeogFromText('SRID=4326;' || %s))
+              AS distance, (
+                select image_url
+                from listing_images
+                where listing_id = listing.id
+                order by display_order, id
+                limit 1
+            ) as preview_image_url
+            from listing
+            WHERE ST_DWithin(location,ST_GeogFromText('SRID=4326;' || %s),%s)
+            ORDER BY distance ASC;
+
+            """,(location,location, distance * 1609.344)
         )
         return curr.fetchall()
 
@@ -181,12 +208,12 @@ def get_listing_images(listing_id):
         )
         return curr.fetchall()
 
-def update_listing(listing_id, title, address, rent, leaseStart, leaseEnd, description):
+def update_listing(listing_id, title, address, location, rent, leaseStart, leaseEnd, description):
     pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
         curr.execute(
-            "update listing set title = %s, address = %s, rent = %s, leaseStart = %s, leaseEnd = %s, description = %s where id = %s;",
-            (title, address, rent, leaseStart, leaseEnd, description, listing_id),
+            "update listing set title = %s, address = %s, location = COALESCE(ST_GeogFromText(NULLIF(%s, '')), location), rent = %s, leaseStart = %s, leaseEnd = %s, description = %s where id = %s;",
+            (title, address, location, rent, leaseStart, leaseEnd, description, listing_id),
         )
 
 
