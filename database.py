@@ -122,7 +122,7 @@ def get_all_listings():
                 limit 1
             ) as preview_image_url
             from listing
-            order by id;
+            order by id desc;
             """,
         )
         return curr.fetchall()
@@ -153,7 +153,7 @@ def search_listings(search_inp,min_rent=None,
             AND leaseStart <= COALESCE(%s, leaseStart)
             AND leaseEnd >= COALESCE(%s, leaseEnd)
 
-            ORDER by id;
+            ORDER by id desc;
             """,
             ("%" + search_inp + "%", min_rent, max_rent, move_in, move_out)
 
@@ -432,7 +432,5 @@ def save_message(conversation_id, sender_id, message):
             )
             return curr.fetchone()
      
-
-
 
 
