@@ -3,11 +3,56 @@
 
 
 <div class="search-bar">
-    <form action="/search" method="GET" class="pure-form">
-        <input type="text" name="q" placeholder="search housing..." class="pure-input-rounded">
-        <button class="pure-button pure-button-primary">Search</button>
-    </form>
+    <div class="search-toggle">
+        <button type="button" class="toggle-btn active" data-mode="name">
+            Name
+        </button>
+        <button type="button" class="toggle-btn" data-mode="distance">
+            Distance
+        </button>
+    </div>
+    <div id="name_search">
+        <form action="/search" method="GET" class="pure-form">
+            <input type="text" name="q" placeholder="search housing..." class="pure-input-rounded">
+            <button class="pure-button pure-button-primary">Search</button>
+        </form>
+    </div>
+    <div hidden id="dist_search">
+        <form id="dist" action="/dist-filter" method="GET" class="pure-form">
+            <gmp-place-autocomplete id="location"></gmp-place-autocomplete>
+            <input type="hidden" name="address" id="address">
+            <input type="hidden" name="location" id="location_point">
+            <p id="address-error" class="form-error" role="alert"></p>
+
+            <select name="distance" id="distance" required>
+                <option value="1">1 mile</option>
+                <option value="3">3 miles</option>
+                <option value="5" selected>5 miles</option>
+                <option value="10">10 miles</option>
+                <option value="25">25 miles</option>
+            </select>
+            <button class="pure-button pure-button-primary">Search</button>
+        </form>
+    </div>
 </div>
+<script>
+    const toggleButtons = document.querySelectorAll(".toggle-btn");
+    const nameSearch = document.getElementById("name_search");
+    const distSearch = document.getElementById("dist_search");
+
+    toggleButtons.forEach(button => {
+        button.addEventListener("click", () => {
+            const isDistance = button.dataset.mode === "distance";
+
+            nameSearch.hidden = isDistance;
+            distSearch.hidden = !isDistance;
+
+            toggleButtons.forEach(btn => {
+                btn.classList.toggle("active", btn === button);
+            });
+        });
+    });
+</script>
 {% if search_inp %}
     <p>Search results for: {{search_inp}}</p>
 {% endif %}
@@ -49,6 +94,43 @@
     </div>
 </div>
 <script>
+    const form = document.getElementById("dist");
+    const address = document.getElementById("address");
+    const addressError = document.getElementById("address-error");
+
+    async function initAutocomplete() {
+        await google.maps.importLibrary("places");
+        const placeAutocomplete = document.getElementById('location');
+        placeAutocomplete.addEventListener(
+        'gmp-select',
+        async ({ placePrediction }) => {
+            address.value = "";
+            document.getElementById("location_point").value = "";
+            const place = placePrediction.toPlace();
+            await place.fetchFields({
+                fields: ['formattedAddress','location'],
+        });
+            if (place.formattedAddress && place.location) {
+                address.value = place.formattedAddress;
+                document.getElementById("location_point").value = `POINT(${place.location.lng()} ${place.location.lat()})`;
+                addressError.textContent = "";
+                console.log("Address selected:", address.value);
+            }
+        });
+
+       placeAutocomplete.addEventListener("input", () => {
+            address.value = "";
+            document.getElementById("location_point").value = "";
+        });
+
+        // Require a selected Google address
+        form.addEventListener("submit", (event) => {
+            if (!address.value || !document.getElementById("location_point").value) {
+                event.preventDefault();
+                addressError.textContent = "Please select an address from Google's suggestions.";
+            }
+        });
+    }
     const mapListings = [
         {% for listing in listings %}
         {
@@ -64,5 +146,4 @@
 </script>
 <script src="{{url_for('static', filename='mapping.js')}}"></script>
 <script src="{{google_home_map_url}}" async></script>
-
 {% endblock %}

@@ -8,6 +8,9 @@ window.initMap = async function () {
         mapId: "DEMO_MAP_ID"
     });
     displayListings(map, mapListings, AdvancedMarkerElement);
+    if (document.getElementById("location")) {
+        await initAutocomplete();
+    }
 };
 
 function displayListings(map, listings, AdvancedMarkerElement) {
