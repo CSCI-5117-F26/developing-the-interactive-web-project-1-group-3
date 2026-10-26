@@ -370,9 +370,66 @@ def search():
     else:
         name = "Guest"
     search_inp=request.args.get("q","")
-    listings=database.search_listings(search_inp)
+
+    max_rent=request.args.get("max_rent", "")
+    min_rent=request.args.get("min_rent", "")
+    move_in=request.args.get("move_in", "")
+    move_out=request.args.get("move_out", "")
+
+
+    if max_rent:
+        try:
+            max_rent=int(max_rent)
+        except ValueError:
+            abort(400,"Maxium rent must be a whole number")
+        if max_rent<0:
+            abort(400,"Maxium rent cannot be a negative number")
+    else:
+        max_rent=None
+
+    if min_rent:
+        try:
+           min_rent=int(min_rent)
+        except ValueError:
+            abort(400,"Minimum rent must be a whole number")
+        if min_rent<0:
+            abort(400,"Minimum rent cannot be a negative number")
+    else:
+        min_rent=None
+    if move_in:
+        try:
+            move_in = date.fromisoformat(move_in)
+        except ValueError:
+            abort(400, "Invalid move-in date.")
+    else:
+        move_in = None
+    if move_out:
+        try:
+            move_out = date.fromisoformat(move_out)
+        except ValueError:
+            abort(400, "Invalid move-out date.")
+    else:
+        move_out = None
+    if min_rent is not None and max_rent is not None:
+        if min_rent > max_rent:
+            abort(400, "Minimum rent cannot exceed maximum rent.")
+
+    if move_in is not None and move_out is not None:
+        if move_out < move_in:
+            abort(400, "Move-out cannot be before move-in.")
+    
+
+
+    listings=database.search_listings(search_inp,
+    min_rent=min_rent,
+    max_rent=max_rent,
+    move_in=move_in,
+    move_out=move_out,)
     return render_template(
-        "feed.html", listings=listings, name=name, user_id=str(user_id), search_inp=search_inp, google_home_map_url=os.environ["GOOGLE_HOME_MAP_URL"]
+        "feed.html", listings=listings, name=name,min_rent=min_rent,
+        max_rent=max_rent,
+        move_in=move_in,
+        move_out=move_out, user_id=str(user_id), search_inp=search_inp, google_home_map_url=os.environ["GOOGLE_HOME_MAP_URL"]
     )
 
 @app.route("/dist-filter")
