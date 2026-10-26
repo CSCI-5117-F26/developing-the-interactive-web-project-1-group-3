@@ -534,12 +534,12 @@ def message_owner(listing_id):
         return redirect("/404")
 
     owner_id = listing.get("owner_id")
-
+    
     if listing_id is None:
         message = "This listing has no owner"
         return redirect(url_for("fourOfour", message=message))
 
-    owner_id = int(listing_id)
+    owner_id = int(listing.get("owner_id"))
 
     if user_id == (listing_id):
         message = "You can't Message yourself!"
