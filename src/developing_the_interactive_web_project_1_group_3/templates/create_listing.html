@@ -222,9 +222,6 @@
     });
 
     form.addEventListener("submit", (event) => {
-        if (!address.value.trim()) {
-            address.value = typedAddress();
-        }
         syncImageInput();
         const datesAreValid = validateDates(true);
 
@@ -233,7 +230,7 @@
             form.reportValidity();
         }
 
-        if (!datesAreValid || !fieldsAreValid) {
+        if (!datesAreValid || !fieldsAreValid || !address.value.trim() || !document.getElementById("location_point").value) {
             event.preventDefault();
             return;
         }

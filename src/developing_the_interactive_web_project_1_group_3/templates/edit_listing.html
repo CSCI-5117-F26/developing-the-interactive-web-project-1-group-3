@@ -212,6 +212,18 @@
 
 	form.addEventListener("submit", (event) => {
 		syncImageInput();
+		const fieldsAreValid = form.checkValidity();
+		if (!fieldsAreValid) {
+			form.reportValidity();
+		}
+
+		if (!fieldsAreValid || !address.value.trim()) {
+			event.preventDefault();
+			if (!address.value.trim()) {
+				addressError.textContent = "Please select an address from Google's suggestions.";
+			}
+			return;
+		}
 		if (existingImageCount() + selectedImages.length > MAX_IMAGES) {
 			event.preventDefault();
 			imageError.textContent = "A listing can have at most 10 images.";
