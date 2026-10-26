@@ -24,8 +24,8 @@ function displayListings(map, listings, AdvancedMarkerElement) {
         }
         groupings[key].push(listing);
     }
-
     // create one marker per grouping
+    const infoWindow = new google.maps.InfoWindow();
     for (const group of Object.values(groupings)) {
         const marker = new AdvancedMarkerElement({
             map: map,
@@ -51,11 +51,13 @@ function displayListings(map, listings, AdvancedMarkerElement) {
             row.append(title, rent, link);
             content.appendChild(row);
         }
-        const infoWindow = new google.maps.InfoWindow({
-            content: content
-        });
+        //only one popup at a time
         marker.addListener("click", () => {
-            infoWindow.open({ anchor: marker,map: map});
+            infoWindow.setContent(content);
+            infoWindow.open({
+                anchor: marker,
+                map: map
+            });
         });
     }
 }
