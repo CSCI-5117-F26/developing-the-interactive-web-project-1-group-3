@@ -127,7 +127,7 @@ def render_home():
         name = "Guest"
 
     return render_template(
-        "home.html", listings=listings, name=name, user_id=user_id, google_home_map_url=os.environ["GOOGLE_HOME_MAP_URL"],
+        "home.html", listings=listings, name=name, user_id=str(user_id), google_home_map_url=os.environ["GOOGLE_HOME_MAP_URL"],
     )
 
 
@@ -359,7 +359,7 @@ def feed():
         name = "Guest"
     listings = database.get_all_listings()
     return render_template(
-        "feed.html", listings=listings, name=name, user_id=user_id, google_home_map_url=os.environ["GOOGLE_HOME_MAP_URL"]
+        "feed.html", listings=listings, name=name, user_id=str(user_id), google_home_map_url=os.environ["GOOGLE_HOME_MAP_URL"]
     )
 
 @app.route("/search")
@@ -372,7 +372,7 @@ def search():
     search_inp=request.args.get("q","")
     listings=database.search_listings(search_inp)
     return render_template(
-        "feed.html", listings=listings, name=name, user_id=user_id,search_inp=search_inp, google_home_map_url=os.environ["GOOGLE_HOME_MAP_URL"]
+        "feed.html", listings=listings, name=name, user_id=str(user_id), search_inp=search_inp, google_home_map_url=os.environ["GOOGLE_HOME_MAP_URL"]
     )
 
 @app.route("/dist-filter")
@@ -392,7 +392,7 @@ def dist_filter():
         "feed.html",
         listings=listings,
         name=name,
-        user_id=user_id,
+        user_id=str(user_id),
         search_inp=address,
         search_mode="distance",
         google_home_map_url=os.environ["GOOGLE_HOME_MAP_URL"]
@@ -416,7 +416,7 @@ def listing(listing_id):
         images=images,
         saved=saved,
         name=name,
-        user_id=user_id,
+        user_id=str(user_id),
     )
 
 
@@ -540,7 +540,7 @@ def messages(conversation_id):
 
     name = getUserName(user_id)
 
-    return render_template("messages.html", name=name, user_id=user_id, conversation_id=conversation_id, conversations=conversations, messages=messages)
+    return render_template("messages.html", name=name, user_id=str(user_id), conversation_id=conversation_id, conversations=conversations, messages=messages)
 
 @app.route("/404/")
 def fourOfour():
