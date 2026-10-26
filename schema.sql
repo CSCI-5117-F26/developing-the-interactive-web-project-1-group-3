@@ -32,9 +32,13 @@ create table listing_images (
 
 create table if not exists favorite (
     id serial primary key,
-    listing_id int not null unique
+    user_id int not null
+        references users(id)
+        on delete cascade,
+    listing_id int not null
         references listing(id)
-        on delete cascade
+        on delete cascade,
+    unique (user_id, listing_id)
 );
 
 create table conversations (

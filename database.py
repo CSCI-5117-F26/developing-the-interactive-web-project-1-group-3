@@ -291,19 +291,19 @@ def delete_listing(listing_id):
             "image_public_ids": public_ids,
         }
 
-def add_favorite(listing_id):
+def add_favorite(user_id, listing_id):
     pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
         curr.execute(
             """
-            insert into favorite (listing_id)
-            values (%s)
-            on conflict (listing_id) do nothing;
+            insert into favorite (user_id, listing_id)
+            values (%s, %s)
+            on conflict (user_id, listing_id) do nothing;
             """,
-            (listing_id,),
+            (user_id, listing_id),
         )
 
-def get_favorites():
+def get_favorites(user_id):
     pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
         curr.execute(
@@ -317,27 +317,29 @@ def get_favorites():
             ) as preview_image_url
             from favorite
             join listing on listing.id = favorite.listing_id
+            where favorite.user_id = %s
             order by favorite.id;
-            """
+            """,
+            (user_id,),
         )
         return curr.fetchall()
 
-def is_favorite(listing_id):
+def is_favorite(user_id, listing_id):
     pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
         curr.execute(
-            "select id from favorite where listing_id = %s;",
-            (listing_id,),
+            "select id from favorite where user_id = %s and listing_id = %s;",
+            (user_id, listing_id),
         )
         return curr.fetchone() is not None
 
 
-def remove_favorite(listing_id):
+def remove_favorite(user_id, listing_id):
     pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
         curr.execute(
-            "delete from favorite where listing_id = %s;",
-            (listing_id,),
+            "delete from favorite where user_id = %s and listing_id = %s;",
+            (user_id, listing_id),
         )
 
 def get_or_create_user_id(auth0_id, name):

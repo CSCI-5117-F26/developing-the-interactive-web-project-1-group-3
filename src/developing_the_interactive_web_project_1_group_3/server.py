@@ -342,11 +342,10 @@ def edit_listing(listing_id):
 @app.route("/favorites/")
 def favorites():
     user_id = getUserID()
-    if user_id:
-        name = getUserName(user_id)
-    else:
-        name = "Guest"
-    listings = database.get_favorites()
+    if not user_id:
+        return redirect("/login")
+    name = getUserName(user_id)
+    listings = database.get_favorites(user_id)
     return render_template("favorites.html", listings=listings, name=name)
 
 
@@ -466,7 +465,7 @@ def listing(listing_id):
     if item is None:
         abort(404)
     images = database.get_listing_images(listing_id)
-    saved = database.is_favorite(listing_id)
+    saved = database.is_favorite(user_id, listing_id) if user_id else False
     return render_template(
         "listing.html",
         item=item,
@@ -481,14 +480,13 @@ def listing(listing_id):
 @app.route("/listing/<int:listing_id>/favorite/", methods=["POST"])
 def favorite_listing(listing_id):
     user_id = getUserID()
-    if user_id:
-        name = getUserName(user_id)
-    else:
-        name = "Guest"
+    if not user_id:
+        return redirect("/login")
+    name = getUserName(user_id)
     item = database.get_listing(listing_id)
     if item is None:
         abort(404)
-    database.add_favorite(listing_id)
+    database.add_favorite(user_id, listing_id)
     flash("Saved to Favorites")
     return redirect(url_for("listing", listing_id=listing_id, name=name))
 
@@ -496,14 +494,13 @@ def favorite_listing(listing_id):
 @app.route("/listing/<int:listing_id>/unfavorite/", methods=["POST"])
 def unfavorite_listing(listing_id):
     user_id = getUserID()
-    if user_id:
-        name = getUserName(user_id)
-    else:
-        name = "Guest"
+    if not user_id:
+        return redirect("/login")
+    name = getUserName(user_id)
     item = database.get_listing(listing_id)
     if item is None:
         abort(404)
-    database.remove_favorite(listing_id)
+    database.remove_favorite(user_id, listing_id)
     flash("Removed from Favorites")
     return redirect(url_for("listing", listing_id=listing_id, name=name))
 
