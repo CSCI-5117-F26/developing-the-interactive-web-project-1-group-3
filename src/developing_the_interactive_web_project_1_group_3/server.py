@@ -238,7 +238,7 @@ def edit_listing(listing_id):
     item = database.get_listing(listing_id)
     if item is None:
         abort(404)
-    if item["owner_id"] != user_id:
+    if item["owner_id"] != str(user_id):
         abort(403)
 
     images = database.get_listing_images(listing_id)
@@ -472,7 +472,7 @@ def delete_listing(listing_id):
     listing = database.get_listing(listing_id)
     if listing is None:
         abort(404)
-    if listing["owner_id"] != user_id:
+    if listing["owner_id"] != str(user_id):
         abort(403)
 
     deleted_listing = database.delete_listing(listing_id)
