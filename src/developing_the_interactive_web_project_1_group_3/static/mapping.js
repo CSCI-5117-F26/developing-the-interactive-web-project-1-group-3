@@ -35,5 +35,27 @@ function displayListings(map, listings, AdvancedMarkerElement) {
             },
             title: `${group.length} listing(s)`
         });
+        
+        // generate html content for the information window
+        const content = document.createElement("div");
+        for (const listing of group) {
+            const row = document.createElement("div");
+            const title = document.createElement("h2");
+            title.textContent =listing.title;
+            const rent =document.createElement("p");
+            rent.textContent = `$${listing.rent}/month`;
+            const link = document.createElement("a");
+            link.href = listing.url;
+            link.textContent = "View Listing";
+            link.className ="pure-button pure-button-primary";
+            row.append(title, rent, link);
+            content.appendChild(row);
+        }
+        const infoWindow = new google.maps.InfoWindow({
+            content: content
+        });
+        marker.addListener("click", () => {
+            infoWindow.open({ anchor: marker,map: map});
+        });
     }
 }
