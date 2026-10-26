@@ -127,7 +127,10 @@ def get_all_listings():
         )
         return curr.fetchall()
 
-def search_listings(search_inp):
+def search_listings(search_inp,min_rent=None,
+    max_rent=None,
+    move_in=None,
+    move_out=None,):
     pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
         # A smarter Daniel would be validating the inputs here.
@@ -145,10 +148,14 @@ def search_listings(search_inp):
             ) as preview_image_url
             from listing
             WHERE title ILIKE %s
+            AND rent >= COALESCE(%s, rent)
+            AND rent <= COALESCE(%s, rent)
+            AND leaseStart <= COALESCE(%s, leaseStart)
+            AND leaseEnd >= COALESCE(%s, leaseEnd)
 
-            order by id;
+            ORDER by id;
             """,
-            ("%"+search_inp+"%",)
+            ("%" + search_inp + "%", min_rent, max_rent, move_in, move_out)
 
         )
         return curr.fetchall()
