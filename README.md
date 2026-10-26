@@ -21,7 +21,8 @@ CSCI 5117, Fall 2026, [assignment description](https://canvas.umn.edu/courses/57
 
 **Describe the most challenging features you implemented
 (one sentence per bullet, maximum 4 bullets):**
-
+* Google Maps integration where users are able to input addresses with autocomplete suggestions and Home and Feed Page equipped with interactive maps showing listing locations on a map.
+* Using Socket.io users are able to message other listing posters to connect with them and ask for further information about a specific listing. 
 * ...
 
 ## Testing Notes
@@ -73,6 +74,9 @@ Please do not document required libraries. or libraries that are mentioned in th
 
 * Library or service name: description of use
 * ...
+* Google Maps JavaScript API: Used to display interactive maps displaying available housing listings. Allowed us to implement custom listing markers, group listings by shared locations, and information windows providing listing information.
+* Google Places API (New): Used to provide address autocomplete suggestions when creatin/editing listings and when using the distance search feature. Allowed us to have clean formatted addresses, while recording their geographic coordinates.
+* PostGIS: PostgreSQL spatial extension allowed us to store geographic coordinates and implement a distance filter utilizing functions like ST_DWithin and ST_Distance.
 
 **If there's anything else you would like to disclose about how your project
 relied on external code, expertise, or anything else, please disclose that
