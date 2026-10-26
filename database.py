@@ -112,7 +112,9 @@ def get_all_listings():
         # psycopg doesn't like "mixed" type lists so we cast the sound to 20 floats
         curr.execute(
             """
-            select listing.*, (
+            select listing.*, 
+            st_y(location::geometry) AS lat,
+            st_x(location::geometry) AS lng, (
                 select image_url
                 from listing_images
                 where listing_id = listing.id
@@ -125,9 +127,6 @@ def get_all_listings():
         )
         return curr.fetchall()
 
-
-
-
 def search_listings(search_inp):
     pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
@@ -135,7 +134,9 @@ def search_listings(search_inp):
         # psycopg doesn't like "mixed" type lists so we cast the sound to 20 floats
         curr.execute(
             """
-            select listing.*, (
+            select listing.*,
+            st_y(location::geometry) AS lat,
+            st_x(location::geometry) AS lng, (
                 select image_url
                 from listing_images
                 where listing_id = listing.id

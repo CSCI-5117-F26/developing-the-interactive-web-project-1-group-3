@@ -10,7 +10,7 @@ window.initMap = async function () {
     displayListings(map, mapListings, AdvancedMarkerElement);
 };
 
-function displayListings(map, listings, AdvancedMarkerElement, PinElement) {
+function displayListings(map, listings, AdvancedMarkerElement) {
     const groupings = {};
     // groupings to handle same location listings
     for (const listing of listings) {
