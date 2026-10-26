@@ -531,3 +531,28 @@ gmp-place-autocomplete {
         transform: translateY(10px);
     }
 }
+
+.price-tag {
+    background-color: #4285f4;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 10px;
+    padding: 5px 8px;
+    position: relative;
+    transform: translateY(-8px);
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.price-tag::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    transform: translate(-50%, 0);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #4285f4;
+}

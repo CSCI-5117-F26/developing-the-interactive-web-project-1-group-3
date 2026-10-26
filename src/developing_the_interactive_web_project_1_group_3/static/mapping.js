@@ -1,7 +1,6 @@
 window.initMap = async function () {
     const { Map } = await google.maps.importLibrary("maps");
-    const { AdvancedMarkerElement } =
-        await google.maps.importLibrary("marker");
+    const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary("marker");
 
     const map = new Map(document.getElementById("home-map"), {
         center: { lat: 44.975, lng: -93.235 },
@@ -11,7 +10,7 @@ window.initMap = async function () {
     displayListings(map, mapListings, AdvancedMarkerElement);
 };
 
-function displayListings(map, listings, AdvancedMarkerElement) {
+function displayListings(map, listings, AdvancedMarkerElement, PinElement) {
     const groupings = {};
     // groupings to handle same location listings
     for (const listing of listings) {
@@ -27,14 +26,19 @@ function displayListings(map, listings, AdvancedMarkerElement) {
     // create one marker per grouping
     const infoWindow = new google.maps.InfoWindow();
     for (const group of Object.values(groupings)) {
+        const priceTag = document.createElement("div");
+        priceTag.className = "price-tag";
+        priceTag.textContent = group.length === 1
+            ? `$${group[0].rent}` : `${group.length} listings`;
         const marker = new AdvancedMarkerElement({
             map: map,
             position: {
                 lat: group[0].lat,
                 lng: group[0].lng
             },
-            title: `${group.length} listing(s)`
+            title: priceTag.textContent
         });
+        marker.append(priceTag);
         
         // generate html content for the information window
         const content = document.createElement("div");
