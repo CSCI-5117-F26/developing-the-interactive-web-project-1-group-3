@@ -97,6 +97,8 @@ Please do not document required libraries. or libraries that are mentioned in th
 * Google Maps JavaScript API: Used to display interactive maps displaying available housing listings. Allowed us to implement custom listing markers, group listings by shared locations, and information windows providing listing information.
 * Google Places API (New): Used to provide address autocomplete suggestions when creatin/editing listings and when using the distance search feature. Allowed us to have clean formatted addresses, while recording their geographic coordinates.
 * PostGIS: PostgreSQL spatial extension allowed us to store geographic coordinates and implement a distance filter utilizing functions like ST_DWithin and ST_Distance.
+* Flask-SocketIO: Used to implement the live messaging feature on the message tab.
+* Cloudinary: For image uploads and retrievals on the create listing, home, and feed pages.
 
 **If there's anything else you would like to disclose about how your project
 relied on external code, expertise, or anything else, please disclose that
