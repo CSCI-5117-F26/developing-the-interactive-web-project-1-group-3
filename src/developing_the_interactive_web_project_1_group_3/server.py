@@ -153,22 +153,24 @@ def chat():
     return render_template("chat.html", name=name)
 
 
+def safe_next_url(url):
+    if not url or not url.startswith("/") or url.startswith("//"):
+        return None
+    return url
+
+
 @app.route("/create_listing/", methods=["GET", "POST"])
 def create_listing():
     user_id = getUserID()
-    if user_id:
-        name = getUserName(user_id)
-    else:
-        name = "Guest"
+    if not user_id:
+        return redirect(url_for("login", next=request.path))
+    name = getUserName(user_id)
     
     if request.method == "GET":
         return render_template(
             "create_listing.html", google_maps_url=os.environ["GOOGLE_MAPS_URL"], name=name
         )
     else:
-
-        if not user_id:
-                return redirect("/login")
 
         title = request.form.get("title")
         address = request.form.get("address")
@@ -565,11 +567,17 @@ def callback():
         message = "Unable to Login"
         return redirect(url_for("fourOfour", message=message))
     session["user"] = token
-    return redirect("/")
+    next_url = safe_next_url(session.pop("next", None))
+    return redirect(next_url or "/")
 
 
 @app.route("/login")
 def login():
+    next_url = safe_next_url(request.args.get("next"))
+    if next_url:
+        session["next"] = next_url
+    else:
+        session.pop("next", None)
     return oauth.auth0.authorize_redirect(
         redirect_uri=url_for("callback", _external=True)
     )
