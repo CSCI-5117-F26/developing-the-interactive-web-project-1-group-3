@@ -40,28 +40,28 @@ along with a very brief caption:**
 
 
 <img width="945" height="497" alt="image" src="https://github.com/user-attachments/assets/8b60ddfa-f3a3-419c-8884-b299d1fc391e" />
+
 Home page of SubleaseFinder, displaying our integrated Google Maps feature. Markers on the map indicate nearby listings to the location on the map.
 
-
 <img width="943" height="494" alt="image" src="https://github.com/user-attachments/assets/d47beec0-1bbe-4866-9619-abfe42433090" />
+
 Messaging page shows real time messages for the posts the user is interested in. Once a post is deleted, the conversation is erased.
 
-
 <img width="688" height="461" alt="image" src="https://github.com/user-attachments/assets/86d99ae1-cbe5-4294-b237-8f2f5c066412" />
+
 Simple Create Listing page with Google Maps address text field, and ability to upload up to 10 images for detailed posts.
 
-
 <img width="929" height="362" alt="image" src="https://github.com/user-attachments/assets/93d309fd-f6c3-4bff-96dd-3371d7ff3a71" />
+
 Example of sublease listing user created. Ability to edit and delete your own posts but only external users can message owner.
 
-
 <img width="546" height="419" alt="image" src="https://github.com/user-attachments/assets/c387e2ba-efd9-4a84-be00-7c40b4a35293" />
+
 Feed page contains all available listings, can see favorited posts while scrolling endlessly through subleasing feed.
 
-
 <img width="560" height="194" alt="image" src="https://github.com/user-attachments/assets/33bce35e-c8a6-4368-8763-03c676bf60e6" />
-Search feature with many filtering options through your feed for a more tailored search.
 
+Search feature with many filtering options through your feed for a more tailored search.
 
 ## Mock-up 
 
