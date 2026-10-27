@@ -15,7 +15,10 @@
         <div class="pure-g">
             {% for listing in listings %}
             <div class="pure-u-1-2">
-                <div class="listing-card">
+                <div class="listing-card{% if listing.saved %} favorite-card{% endif %}">
+                    {% if listing.saved %}
+                    <span class="favorite-heart" aria-hidden="true">❤️</span>
+                    {% endif %}
                     {% if listing.preview_image_url %}
                     <img class="listing-image" src="{{ listing.preview_image_url }}" alt="Photo of {{ listing.title }}">
                     {% elif listing.image_data %}
@@ -24,6 +27,9 @@
                     <div class="img-placeholder"></div>
                     {% endif %}
                     <h2>{{ listing.title }}</h2>
+                    {% if listing.owner_name %}
+                    <p><strong>Owner:</strong> {{ listing.owner_name }}</p>
+                    {% endif %}
                     <p><strong>Address:</strong> {{ listing.address }}</p>
                     <p>${{ listing.rent }}/month</p>
             

@@ -96,7 +96,11 @@ def get_first_six():
                 where listing_id = listing.id
                 order by display_order, id
                 limit 1
-            ) as preview_image_url
+            ) as preview_image_url, (
+                select name
+                from users
+                where id::text = listing.owner_id
+            ) as owner_name
             from listing
             order by id desc
             limit 6;
@@ -120,7 +124,11 @@ def get_all_listings():
                 where listing_id = listing.id
                 order by display_order, id
                 limit 1
-            ) as preview_image_url
+            ) as preview_image_url, (
+                select name
+                from users
+                where id::text = listing.owner_id
+            ) as owner_name
             from listing
             order by id desc;
             """,
@@ -145,7 +153,11 @@ def search_listings(search_inp,min_rent=None,
                 where listing_id = listing.id
                 order by display_order, id
                 limit 1
-            ) as preview_image_url
+            ) as preview_image_url, (
+                select name
+                from users
+                where id::text = listing.owner_id
+            ) as owner_name
             from listing
             WHERE title ILIKE %s
             AND rent >= COALESCE(%s, rent)
@@ -174,7 +186,11 @@ def search_by_distance(location, distance):
                 where listing_id = listing.id
                 order by display_order, id
                 limit 1
-            ) as preview_image_url
+            ) as preview_image_url, (
+                select name
+                from users
+                where id::text = listing.owner_id
+            ) as owner_name
             from listing
             WHERE ST_DWithin(location,ST_GeogFromText('SRID=4326;' || %s),%s)
             ORDER BY distance ASC;
@@ -323,6 +339,15 @@ def get_favorites(user_id):
             (user_id,),
         )
         return curr.fetchall()
+
+def get_favorite_listing_ids(user_id):
+    pool.open()
+    with pool.connection() as conn, conn.cursor() as curr:
+        curr.execute(
+            "select listing_id from favorite where user_id = %s;",
+            (user_id,),
+        )
+        return [row["listing_id"] for row in curr.fetchall()]
 
 def is_favorite(user_id, listing_id):
     pool.open()

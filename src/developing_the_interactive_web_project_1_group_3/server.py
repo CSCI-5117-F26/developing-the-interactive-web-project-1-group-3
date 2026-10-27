@@ -78,6 +78,13 @@ def get_user_convo_list(user_id):
 
     return list
 
+def mark_saved_listings(listings, user_id):
+    if not user_id:
+        return
+    saved_ids = set(database.get_favorite_listing_ids(user_id))
+    for listing in listings:
+        listing["saved"] = listing["id"] in saved_ids
+
 
 
 def delete_cloudinary_images(public_ids):
@@ -120,6 +127,7 @@ def render_home():
         name = getUserName(user_id)
     else:
         name = "Guest"
+    mark_saved_listings(listings, user_id)
 
     return render_template(
         "home.html", listings=listings, name=name, user_id=str(user_id), google_home_map_url=os.environ["GOOGLE_HOME_MAP_URL"],
@@ -356,6 +364,7 @@ def feed():
     else:
         name = "Guest"
     listings = database.get_all_listings()
+    mark_saved_listings(listings, user_id)
     return render_template(
         "feed.html", listings=listings, name=name, user_id=str(user_id), google_home_map_url=os.environ["GOOGLE_HOME_MAP_URL"]
     )
@@ -423,6 +432,7 @@ def search():
     max_rent=max_rent,
     move_in=move_in,
     move_out=move_out,)
+    mark_saved_listings(listings, user_id)
     return render_template(
         "feed.html", listings=listings, name=name,min_rent=min_rent,
         max_rent=max_rent,
@@ -443,6 +453,7 @@ def dist_filter():
     if not location or distance not in (1, 3, 5, 10, 25):
         abort(400, description="Invalid location or distance")
     listings = database.search_by_distance(location, distance)
+    mark_saved_listings(listings, user_id)
     return render_template(
         "feed.html",
         listings=listings,
