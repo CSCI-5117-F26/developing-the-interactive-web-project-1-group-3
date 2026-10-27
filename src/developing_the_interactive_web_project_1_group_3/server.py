@@ -155,6 +155,10 @@ def create_listing():
             "create_listing.html", google_maps_url=os.environ["GOOGLE_MAPS_URL"], name=name
         )
     else:
+
+        if not user_id:
+                return redirect("/login")
+
         title = request.form.get("title")
         address = request.form.get("address")
         location = request.form.get("location")
