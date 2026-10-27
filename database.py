@@ -406,8 +406,12 @@ def get_all_conversations(user_id):
     pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
         curr.execute(
-            "select * from conversations " \
-            "where user1_id = %s or user2_id = %s",
+            """
+            select conversations.*, listing.title as listing_title
+            from conversations
+            join listing on listing.id = conversations.listing_id
+            where conversations.user1_id = %s or conversations.user2_id = %s
+            """,
             (user_id, user_id),
         )
         return curr.fetchall()
@@ -434,5 +438,4 @@ def save_message(conversation_id, sender_id, message):
             )
             return curr.fetchone()
      
-
 

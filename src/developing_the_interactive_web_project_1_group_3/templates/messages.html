@@ -19,7 +19,7 @@
     <div id="chatList" class="pure-u-1-4">
         {% for conversation in conversations %}
         <a href="{{ url_for('messages', conversation_id=conversation.id) }}"{% if conversation_id == conversation.id %} aria-current="page"{% endif %}>
-            {{conversation.other_user_name}}
+            {{conversation.listing_title}}
         </a>
         {% else %}
 

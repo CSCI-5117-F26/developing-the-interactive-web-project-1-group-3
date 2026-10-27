@@ -74,12 +74,7 @@ def get_user_convo_list(user_id):
     list = []
 
     for conversation in conversations:
-        if int(conversation["user1_id"] == int(user_id)):
-            other_user = conversation["user2_id"]
-        else:
-            other_user = conversation["user1_id"]
-
-        list.append({"id": conversation["id"], "other_user_name": database.get_username(other_user)})
+        list.append({"id": conversation["id"], "listing_title": conversation["listing_title"]})
 
     return list
 
@@ -721,4 +716,3 @@ def handle_send_message(data):
 
 
     
-
