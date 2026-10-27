@@ -203,7 +203,15 @@ def get_listing(listing_id):
     pool.open()
     with pool.connection() as conn, conn.cursor() as curr:
         curr.execute(
-            "select * from listing where id = %s;",
+            """
+            select listing.*, (
+                select name
+                from users
+                where id::text = listing.owner_id
+            ) as owner_name
+            from listing
+            where listing.id = %s;
+            """,
             (listing_id,),
         )
         return curr.fetchone()
@@ -330,7 +338,11 @@ def get_favorites(user_id):
                 where listing_id = listing.id
                 order by display_order, id
                 limit 1
-            ) as preview_image_url
+            ) as preview_image_url, (
+                select name
+                from users
+                where id::text = listing.owner_id
+            ) as owner_name
             from favorite
             join listing on listing.id = favorite.listing_id
             where favorite.user_id = %s

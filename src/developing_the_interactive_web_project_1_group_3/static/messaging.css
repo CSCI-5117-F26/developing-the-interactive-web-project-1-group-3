@@ -55,6 +55,22 @@
     background: var(--brand);
 }
 
+.chat-list-title,
+.chat-list-person {
+    display: block;
+}
+
+.chat-list-person {
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+#chatList a[aria-current="page"] .chat-list-person {
+    color: rgba(255, 255, 255, 0.82);
+}
+
 #chatList p {
     margin: 8px;
     color: var(--muted);
@@ -96,6 +112,10 @@
     border: 1px solid #e5ece7;
     border-radius: 5px 14px 14px;
     overflow-wrap: anywhere;
+}
+
+#chat-messages li.message-incoming {
+    align-self: flex-start;
 }
 
 #chat-messages li.message-own {

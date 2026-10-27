@@ -18,8 +18,9 @@
 <div id="messagingBlock">
     <div id="chatList" class="pure-u-1-4">
         {% for conversation in conversations %}
-        <a href="{{ url_for('messages', conversation_id=conversation.id) }}"{% if conversation_id == conversation.id %} aria-current="page"{% endif %}>
-            {{conversation.listing_title}}
+        <a href="{{ url_for('messages', conversation_id=conversation.id) }}"{% if conversation_id|int == conversation.id %} aria-current="page"{% endif %}>
+            <span class="chat-list-title">{{ conversation.listing_title }}</span>
+            <span class="chat-list-person">{{ conversation.other_user_name }}</span>
         </a>
         {% else %}
 
@@ -33,9 +34,9 @@
         <div id="chatMessagesBlock" class="top-block">
             <ul id="chat-messages" aria-live="polite">
             {% for message in messages %}
-                <li class="message-bubble{% if message.sender_id == user_id %} message-own{% else %} message-incoming{% endif %}">
+                <li class="message-bubble{% if message.sender_id|int == user_id|int %} message-own{% else %} message-incoming{% endif %}">
                     <strong class="message-sender">
-                        {% if message.sender_id == user_id %}
+                        {% if message.sender_id|int == user_id|int %}
                             You
                         {% else %}
                             {{ message.sender_name or "Anonymous User"}}
