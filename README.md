@@ -23,7 +23,8 @@ CSCI 5117, Fall 2026, [assignment description](https://canvas.umn.edu/courses/57
 (one sentence per bullet, maximum 4 bullets):**
 * Google Maps integration where users are able to input addresses with autocomplete suggestions and Home and Feed Page equipped with interactive maps showing listing locations on a map.
 * Using Socket.io users are able to message other listing posters to connect with them and ask for further information about a specific listing. 
-* ...
+* Users can create/edit and save listings that contain information like name, address, rent, and also upload images that we store using Cloudinary
+* Users can search for listings by name, date, rent, and location and have search results populate on interactive maps
 
 ## Testing Notes
 
