@@ -1,5 +1,3 @@
-console.log("Here12")
-
 var socket = io();
 
 messagetextBlock = document.getElementById("message");
