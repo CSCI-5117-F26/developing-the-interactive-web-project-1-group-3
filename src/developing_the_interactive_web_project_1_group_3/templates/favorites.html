@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="pure-g">
+    {% for listing in listings %}
+    <div class="pure-u-1-2">
+        <div class="listing-card favorite-card">
+            <span class="favorite-heart" aria-hidden="true">❤️</span>
+            {% if listing.preview_image_url %}
+            <img class="listing-image" src="{{ listing.preview_image_url }}" alt="Photo of {{ listing.title }}">
+            {% elif listing.image_data %}
+            <img class="listing-image" src="{{ url_for('listing_image', listing_id=listing.id) }}" alt="Photo of {{ listing.title }}">
+            {% else %}
+            <div class="img-placeholder"></div>
+            {% endif %}
+            <h2>{{ listing.title }}</h2>
+            {% if listing.owner_name %}
+            <p><strong>Posted by:</strong> {{ listing.owner_name }}</p>
+            {% endif %}
+            <p><strong>Address:</strong> {{ listing.address }}</p>
+            <p>${{ listing.rent }}/month</p>
+            <a href="{{ url_for('listing', listing_id=listing.id) }}" class="pure-button">View Listing</a>
+        </div>
+    </div>
+    {% else %}
+    <p>You have not saved any listings.</p>
+    {% endfor %}
+</div>
+
+{% endblock %}

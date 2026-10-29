@@ -1,0 +1,219 @@
+{% extends "layout.html" %}
+{% block content %}
+
+
+<div class="search-bar">
+    <div class="search-toggle">
+        <button type="button" class="toggle-btn active" data-mode="name">
+            Name
+        </button>
+        <button type="button" class="toggle-btn" data-mode="distance">
+            Distance
+        </button>
+    </div>
+    <div id="name_search">
+        <form action="/search" method="GET" class="pure-form">
+            <div class="search-row"></divclass>
+                <input type="text" name="q" placeholder="search housing..." >
+                <button class="pure-button pure-button-primary">Search</button>
+            </div>
+       
+
+        <details class="search-filters">
+        <summary class="pure-button pure-button-primary">Filters</summary>
+            <div class="filter-grid">
+            <div>
+
+                <label for="max-rent"> Maximum Monthly Rent </label>
+                <input type="number" id="max-rent" name="max_rent" min="0">
+            </div>
+
+            <div>
+            <label for="min-rent"> Minimum Monthly Rent </label>
+            <input type="number" id="min-rent" name="min_rent" min="0">
+            </div>
+            <div>
+
+            <label for="move-in"> Move in Date </label>
+            <input type="date" id="move-in" name="move_in" >
+            </div>
+
+            <div>
+
+
+            <label for="move-out"> Move out Date </label>
+            <input type="date" id="move-out" name="move_out">
+            </div>
+            </div>
+
+
+            <button class="pure-button pure-button-primary">
+                Apply
+            </button>
+        
+        
+    
+        </details>
+    </form>
+    </div>
+    <div hidden id="dist_search">
+        <form id="dist" action="/dist-filter" method="GET" class="pure-form">
+            <gmp-place-autocomplete id="location"></gmp-place-autocomplete>
+            <input type="hidden" name="address" id="address">
+            <input type="hidden" name="location" id="location_point">
+            <p id="address-error" class="form-error" role="alert"></p>
+
+            <select name="distance" id="distance" required>
+                <option value="1">1 mile</option>
+                <option value="3">3 miles</option>
+                <option value="5" selected>5 miles</option>
+                <option value="10">10 miles</option>
+                <option value="25">25 miles</option>
+            </select>
+            <button class="pure-button pure-button-primary">Search</button>
+
+            
+
+
+        </form>
+    </div>
+</div>
+<script>
+    const toggleButtons = document.querySelectorAll(".toggle-btn");
+    const nameSearch = document.getElementById("name_search");
+    const distSearch = document.getElementById("dist_search");
+
+    toggleButtons.forEach(button => {
+        button.addEventListener("click", () => {
+            const isDistance = button.dataset.mode === "distance";
+
+            nameSearch.hidden = isDistance;
+            distSearch.hidden = !isDistance;
+
+            toggleButtons.forEach(btn => {
+                btn.classList.toggle("active", btn === button);
+            });
+        });
+    });
+</script>
+{% if search_inp or min_rent is number or max_rent is number or move_in or move_out %}
+<div class="search-summary">
+    <strong>Showing results for:</strong>
+
+    {% if search_inp %}
+        <span>Search: {{ search_inp }}</span>
+    {% endif %}
+    
+   
+
+    {% if min_rent is number %}
+        <span>Minimum rent: ${{ min_rent }}</span>
+    {% endif %}
+
+    {% if max_rent is number%}
+        <span>Maximum rent: {{ max_rent }}</span>
+    {% endif %}
+    {% if move_in %}
+        <span>Move in: ${{ move_in }}</span>
+    {% endif %}
+    {% if move_out %}
+        <span>Move out: ${{ move_out }}</span>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="pure-g">
+    <div class="pure-u-1 pure-u-md-1-2">
+        <h2>Where to Look?</h2>
+        <div id="home-map" class="img-large home-map"></div>
+    </div>
+    <div class="pure-u-1 pure-u-md-1-2">
+
+        <div class="pure-g">
+            {% for listing in listings %}
+            <div class="pure-u-1-2">
+                <div class="listing-card{% if listing.saved %} favorite-card{% endif %}">
+                    {% if listing.saved %}
+                    <span class="favorite-heart" aria-hidden="true">❤️</span>
+                    {% endif %}
+                    {% if listing.preview_image_url %}
+                    <img class="listing-image" src="{{ listing.preview_image_url }}" alt="Photo of {{ listing.title }}">
+                    {% elif listing.image_data %}
+                    <img class="listing-image" src="{{ url_for('listing_image', listing_id=listing.id) }}" alt="Photo of {{ listing.title }}">
+                    {% else %}
+                    <div class="img-placeholder"></div>
+                    {% endif %}
+                    <h2>{{ listing.title }}</h2>
+                    {% if listing.owner_name %}
+                    <p><strong>Posted by:</strong> {{ listing.owner_name }}</p>
+                    {% endif %}
+                    <p><strong>Address:</strong> {{ listing.address }}</p>
+                    <p>${{ listing.rent }}/month</p>
+            
+                    <a href="{{ url_for('listing', listing_id=listing.id) }}" class="pure-button">View Listing</a>
+                    {% if user_id and listing.owner_id == user_id %}
+                    <a href="{{ url_for('edit_listing', listing_id=listing.id) }}" class="pure-button">Edit Post</a>
+                    <form method="post" action="{{ url_for('delete_listing', listing_id=listing.id) }}" onsubmit="return confirm('Are you sure you want to delete this post?')">
+                        <button type="submit" class="pure-button button-danger">Delete Post</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<script>
+    const form = document.getElementById("dist");
+    const address = document.getElementById("address");
+    const addressError = document.getElementById("address-error");
+
+    async function initAutocomplete() {
+        await google.maps.importLibrary("places");
+        const placeAutocomplete = document.getElementById('location');
+        placeAutocomplete.addEventListener(
+        'gmp-select',
+        async ({ placePrediction }) => {
+            address.value = "";
+            document.getElementById("location_point").value = "";
+            const place = placePrediction.toPlace();
+            await place.fetchFields({
+                fields: ['formattedAddress','location'],
+        });
+            if (place.formattedAddress && place.location) {
+                address.value = place.formattedAddress;
+                document.getElementById("location_point").value = `POINT(${place.location.lng()} ${place.location.lat()})`;
+                addressError.textContent = "";
+                console.log("Address selected:", address.value);
+            }
+        });
+
+       placeAutocomplete.addEventListener("input", () => {
+            address.value = "";
+            document.getElementById("location_point").value = "";
+        });
+
+        // Require a selected Google address
+        form.addEventListener("submit", (event) => {
+            if (!address.value || !document.getElementById("location_point").value) {
+                event.preventDefault();
+                addressError.textContent = "Please select an address from Google's suggestions.";
+            }
+        });
+    }
+    const mapListings = [
+        {% for listing in listings %}
+        {
+            id: {{ listing.id | tojson }},
+            title: {{ listing.title | tojson }},
+            rent: {{ listing.rent | tojson }},
+            lat: {{ listing.lat | tojson }},
+            lng: {{ listing.lng | tojson }},
+            url: {{ url_for('listing', listing_id=listing.id) | tojson }}
+        }{{ "," if not loop.last }}
+        {% endfor %}
+    ];
+</script>
+<script src="{{url_for('static', filename='mapping.js')}}"></script>
+<script src="{{google_home_map_url}}" async></script>
+{% endblock %}

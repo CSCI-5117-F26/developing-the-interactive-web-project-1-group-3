@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+{% block content %}
+<script id="getItem" type="application/json">
+    {"item": {{ item | tojson }}}
+</script>
+
+<div class="listing-heading">
+    <div class="listing-title">
+        <h1>{{ item.title }}</h1>
+        {% with messages = get_flashed_messages() %}
+            {% for message in messages %}
+            <p class="save-notice" role="status">{{ message }}</p>
+            {% endfor %}
+        {% endwith %}
+    </div>
+    <div class="listing-actions">
+        {% if user_id and item.owner_id == user_id %}
+        <a class="pure-button" href="{{ url_for('edit_listing', listing_id=item.id) }}">Edit Post</a>
+        <form method="post" action="{{ url_for('delete_listing', listing_id=item.id) }}" onsubmit="return confirm('Are you sure you want to delete this post?')">
+            <button type="submit" class="pure-button button-danger">Delete Post</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="listing-container pure-g">
+    <div class="pure-u-1 pure-u-md-1-2">
+        {% if images %}
+        <div class="listing-image-gallery">
+            {% for image in images %}
+            <img
+                src="{{ image.image_url }}"
+                alt="{{ image.alt_text or item.title }}"
+                loading="lazy"
+            >
+            {% endfor %}
+        </div>
+        {% elif item.image_data %}
+        <img class="listing-image listing-detail-image" src="{{ url_for('listing_image', listing_id=item.id) }}" alt="Photo of {{ item.title }}">
+        {% else %}
+        <div class="img-large"></div>
+        {% endif %}
+    </div>
+
+    <div class="details pure-u-1 pure-u-md-1-2">
+        {% if item.owner_name %}
+        <p><strong>Posted by:</strong> {{ item.owner_name }}</p>
+        {% endif %}
+        <p><strong>Address:</strong> {{ item.address }}</p>
+        <p><strong>Price:</strong> ${{ item.rent }} / month</p>
+        <p>{{ item.description }}</p>
+
+        <form id="messageowner" method="post" action="{{ url_for('message_owner', listing_id=item.id) }}">
+            <button type="submit" class="pure-button">Message Owner!</button>
+        </form>
+
+        {% if saved %}
+        <form method="post" action="{{ url_for('unfavorite_listing', listing_id=item.id) }}">
+            <button type="submit" class="pure-button">Unsave this Post</button>
+        </form>
+        {% else %}
+        <form method="post" action="{{ url_for('favorite_listing', listing_id=item.id) }}">
+            <button type="submit" class="pure-button">Save this Post</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    const saveNotice = document.querySelector(".save-notice");
+    if (saveNotice) {
+        setTimeout(() => {
+            saveNotice.classList.add("is-hiding");
+            saveNotice.addEventListener("animationend", () => {
+                saveNotice.remove();
+            }, { once: true });
+        }, 3000);
+    }
+</script>
+
+{% endblock %}

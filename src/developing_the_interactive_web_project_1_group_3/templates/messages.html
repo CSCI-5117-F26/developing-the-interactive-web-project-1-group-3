@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+
+{% block header %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous" defer></script>
+<script src="{{ url_for('static', filename='messaging_page.js') }}" defer></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='messaging.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="messages-heading">
+    <h1>Messages</h1>
+    <p>Keep your conversations going in one place.</p>
+</div>
+<script id="getConversation" type="application/json">
+    {{ {"conversation_id": conversation_id, "user_id": user_id} | tojson }}
+</script>
+
+<div id="messagingBlock">
+    <div id="chatList" class="pure-u-1-4">
+        {% for conversation in conversations %}
+        <a href="{{ url_for('messages', conversation_id=conversation.id) }}"{% if conversation_id|int == conversation.id %} aria-current="page"{% endif %}>
+            <span class="chat-list-title">{{ conversation.listing_title }}</span>
+            <span class="chat-list-person">{{ conversation.other_user_name }}</span>
+        </a>
+        {% else %}
+
+        <p>No Conversations!</p>
+
+        {% endfor %}
+    </div>
+
+    <div id="currentChat" class="pure-u-3-4">
+        {% if conversation_id is not none %}
+        <div id="chatMessagesBlock" class="top-block">
+            <ul id="chat-messages" aria-live="polite">
+            {% for message in messages %}
+                <li class="message-bubble{% if message.sender_id|int == user_id|int %} message-own{% else %} message-incoming{% endif %}">
+                    <strong class="message-sender">
+                        {% if message.sender_id|int == user_id|int %}
+                            You
+                        {% else %}
+                            {{ message.sender_name or "Anonymous User"}}
+                        {% endif %}
+                    </strong>
+                    <span>{{ message.message }}</span>
+                </li>
+            {% endfor %}
+            </ul>
+        </div>
+
+        <div id="textMessagesBlock" class="bottom-block">
+            <input type="text" id="message" placeholder="Write a message and press Enter..." aria-label="Write a message" maxlength="2000">
+        </div>
+        {% else %}
+            <p>Select a conversation to start messaging!</p>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
